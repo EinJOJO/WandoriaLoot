@@ -6,24 +6,30 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import me.einjojo.wandorialoot.WandoriaLoot;
+import me.einjojo.wandorialoot.command.SetupCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
-public class LootChest implements ConfigurationSerializable {
+public class LootChest implements ConfigurationSerializable, InventoryHolder{
     private final UUID uuid;
     private final Location location;
     private ItemStack[] content;
     private LootItem[] lootTable;
+
+    private final HashMap<UUID, Inventory> playerInventories = new HashMap<>();
+
 
     public LootChest(Location location) {
         this(UUID.randomUUID(),location, null, null);
@@ -49,7 +55,17 @@ public class LootChest implements ConfigurationSerializable {
     }
 
     public ItemStack[] generateContent() {
-        return content;
+        Random random = new Random();
+        ItemStack[] generated = new ItemStack[random.nextInt(27) + 1]; //Random amount of items that will be generated
+        if (lootTable == null) setLootTable(new LootItem[0]);
+        for (int i = 0; i < generated.length; i++) {
+            if (lootTable.length > 0) {
+                ItemStack gen = lootTable[random.nextInt(lootTable.length)].getItem(); // Choose random item from loot table
+                gen.setAmount(i + 1);
+                generated[i] = gen;
+            }
+        }
+        return generated;
     }
 
     public Location getLocation() {
@@ -61,8 +77,37 @@ public class LootChest implements ConfigurationSerializable {
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
         packet.getIntegers().write(0, 1);
         ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
-        Inventory inventory = Bukkit.createInventory(null, 9 * 4, "§8Lootchest");
-        player.openInventory(inventory);
+        // Make lootTable
+        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
+            Inventory inventory = Bukkit.createInventory(this, 9 * 4, "§cLootTable einstellen");
+            for (LootItem lootItem : getLootTable()) {
+                ItemStack demo = new ItemStack(lootItem.getItem());
+                inventory.addItem(demo);
+            }
+            playerInventories.put(player.getUniqueId(), inventory);
+            player.openInventory(inventory);
+        } else {
+            if (playerInventories.containsKey(player.getUniqueId())) {
+                player.openInventory(playerInventories.get(player.getUniqueId()));
+            } else {
+                Inventory inventory = Bukkit.createInventory(this, 9 * 3, "§8Lootchest");
+                //Generate loot
+                ItemStack[] generated = generateContent();
+                Random random = new Random();
+                for (int i = 0; i < inventory.getSize(); i++) {
+                    int slot = random.nextInt(inventory.getSize());
+                    if (inventory.getItem(slot) == null) {
+                        inventory.setItem(slot, generated[i]);
+                    } else {
+                        i--;
+                    }
+
+                }
+            }
+
+        }
+
+
     }
 
     public void render(Player player) {
@@ -75,6 +120,10 @@ public class LootChest implements ConfigurationSerializable {
         }, 10);
     }
 
+    public HashMap<UUID, Inventory> getPlayerInventories() {
+        return playerInventories;
+    }
+
     @NotNull
     @Override
     public Map<String, Object> serialize() {
@@ -83,6 +132,12 @@ public class LootChest implements ConfigurationSerializable {
         c.put("lootTable", null);
         c.put("content", null);
         return c;
+    }
+
+    @NotNull
+    @Override
+    public Inventory getInventory() {
+        return null;
     }
 }
 

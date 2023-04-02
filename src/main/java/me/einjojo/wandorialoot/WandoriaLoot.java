@@ -7,6 +7,7 @@ import me.einjojo.wandorialoot.chest.LootChestManager;
 import me.einjojo.wandorialoot.command.SetupCommand;
 import me.einjojo.wandorialoot.listener.ChunkLoadListener;
 import me.einjojo.wandorialoot.listener.InteractionListener;
+import me.einjojo.wandorialoot.listener.InventoryCloseListener;
 
 public final class WandoriaLoot extends JoPlugin {
 
@@ -18,7 +19,8 @@ public final class WandoriaLoot extends JoPlugin {
     public void onPluginEnable() {
         registerListener(
                 new ChunkLoadListener(this),
-                new InteractionListener(this)
+                new InteractionListener(this),
+                new InventoryCloseListener(this)
         );
         registerCommands(new SetupCommand());
         this.lootChestManager = new LootChestManager(this);
