@@ -4,12 +4,16 @@ import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.chest.LootChest;
 import me.einjojo.wandorialoot.chest.LootItem;
 import me.einjojo.wandorialoot.command.SetupCommand;
+import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
 
 public class InventoryCloseListener implements Listener {
 
@@ -26,15 +30,17 @@ public class InventoryCloseListener implements Listener {
         } else {
             closeLootChest(e.getPlayer(), lootChest);
         }
+        lootChest.close((Player) e.getPlayer());
     }
 
     public void closeLootTable(HumanEntity player, LootChest lootChest) {
         ItemStack[] contents = lootChest.getPlayerInventories().get(player.getUniqueId()).getContents();
-        LootItem[] lootItems = new LootItem[contents.length];
-        for (int i = 0; i < contents.length; i++) {
-            lootItems[i] = new LootItem(contents[i]);
+        ArrayList<LootItem> lootItems = new ArrayList<>();
+        for (ItemStack content : contents) {
+            if (content == null || content.getType().equals(Material.AIR)) continue;
+            lootItems.add(new LootItem(content));
         }
-        lootChest.setLootTable(lootItems);
+        lootChest.setLootTable(lootItems.toArray(new LootItem[]{}));
         player.sendMessage("LootTable updated!");
     }
 

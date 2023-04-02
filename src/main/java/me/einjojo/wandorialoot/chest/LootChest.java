@@ -72,6 +72,10 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder{
         return location;
     }
 
+    public void close(Player player) {
+        playerInventories.remove(player.getUniqueId());
+    }
+
     public void open(Player player) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_ACTION);
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
@@ -94,15 +98,16 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder{
                 //Generate loot
                 ItemStack[] generated = generateContent();
                 Random random = new Random();
-                for (int i = 0; i < inventory.getSize(); i++) {
+                for (int i = 0; i < generated.length; i++) {
                     int slot = random.nextInt(inventory.getSize());
                     if (inventory.getItem(slot) == null) {
                         inventory.setItem(slot, generated[i]);
                     } else {
                         i--;
                     }
-
                 }
+                playerInventories.put(uuid, inventory);
+                player.openInventory(inventory);
             }
 
         }
