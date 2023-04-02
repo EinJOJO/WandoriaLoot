@@ -3,3 +3,8 @@ version: '${version}'
 main: me.einjojo.wandorialoot.WandoriaLoot
 api-version: 1.19
 depend: [ ProtocolLib ]
+commands:
+  setup:
+    description: setup
+  test:
+    description: test

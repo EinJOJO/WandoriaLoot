@@ -1,9 +1,10 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 group = 'me.einjojo'
-version = '1.0-SNAPSHOT'
+version = '0.3-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -20,7 +21,7 @@ repositories {
 
 dependencies {
     implementation 'org.jetbrains:annotations:24.0.0'
-    implementation("me.einjojo:JosLibrary:0.1.0-SNAPSHOT")
+    implementation("me.einjojo:JosLibrary:0.2-SNAPSHOT")
     compileOnly group: "org.spigotmc", name:"spigot", version:"1.19.2-R0.1-SNAPSHOT"
     compileOnly group: "com.comphenix.protocol", name:"ProtocolLib", version: "5.0.0-SNAPSHOT"
 }
@@ -36,8 +37,10 @@ java {
 }
 
 tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         options.release = targetJavaVersion
+
     }
 }
 
@@ -49,7 +52,26 @@ processResources {
         expand props
     }
 }
-jar {
-    destinationDirectory = file("D:\\workspace\\minecraft\\testserver\\zwandoria\\plugins")
-    archiveFileName  = "WandoriaLoot " + this.version + ".jar"
+
+assemble{
+    dependsOn(shadowJar)
+}
+
+shadowJar {
+    minimize()
+    archiveFileName.set("${rootProject.name}-${project.version}.jar")
+}
+
+
+tasks.register('moveToServer') {
+    doLast {
+        delete fileTree(dir: 'D:\\workspace\\minecraft\\testserver\\zwandoria\\plugins', include: "${rootProject.name}*.jar")
+        copy {
+            from "${buildDir}/libs/${rootProject.name}-${project.version}.jar"
+            into "D:\\workspace\\minecraft\\testserver\\zwandoria\\plugins"
+        }
+    }
+}
+build {
+    finalizedBy(moveToServer)
 }
