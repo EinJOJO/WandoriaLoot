@@ -11,12 +11,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -50,7 +48,7 @@ public class LootChest implements ConfigurationSerializable {
         this.lootTable = lootTable;
     }
 
-    public ItemStack[] getContent() {
+    public ItemStack[] generateContent() {
         return content;
     }
 
@@ -58,8 +56,13 @@ public class LootChest implements ConfigurationSerializable {
         return location;
     }
 
-    public void setContent(ItemStack[] content) {
-        this.content = content;
+    public void open(Player player) {
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_ACTION);
+        packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
+        packet.getIntegers().write(0, 1);
+        ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
+        Inventory inventory = Bukkit.createInventory(null, 9 * 4, "§8Lootchest");
+        player.openInventory(inventory);
     }
 
     public void render(Player player) {
