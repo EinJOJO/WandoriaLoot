@@ -1,0 +1,5 @@
+name: WandoriaLoot
+version: '${version}'
+main: me.einjojo.wandorialoot.WandoriaLoot
+api-version: 1.19
+depend: [ ProtocolLib ]
