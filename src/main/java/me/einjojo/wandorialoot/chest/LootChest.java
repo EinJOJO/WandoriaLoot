@@ -5,6 +5,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
+import me.einjojo.wandorialoot.WandoriaLoot;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -64,11 +65,11 @@ public class LootChest implements ConfigurationSerializable {
     public void render(Player player) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_CHANGE);
 
-        // Set the block change data for the chest block at the given location
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
         packet.getBlockData().write(0, WrappedBlockData.createData(Material.CHEST));
-
-        ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), () -> {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
+        }, 10);
     }
 
     @NotNull

@@ -14,7 +14,7 @@ import java.util.*;
 public class LootChestManager {
 
     private final WandoriaLoot plugin;
-    private final Map<Chunk, List<LootChest>> chunkChestMap = new HashMap<>();
+    private final Map<String, List<LootChest>> chunkChestMap = new HashMap<>();
     private Map<UUID, List<LootChest>> playerChestMap;
     private final PlayersConfig playersConfig;
     private final LootChestConfig lootChestConfig;
@@ -53,7 +53,7 @@ public class LootChestManager {
      * @param lootChest Lootchest that should be registered inside the chunkmap
      */
     public void addChest(LootChest lootChest) {
-        Chunk lChunk = lootChest.getLocation().getChunk();
+        String lChunk = parseChunk(lootChest.getLocation().getChunk());
         if (chunkChestMap.containsKey(lChunk)) {
             chunkChestMap.get(lChunk).add(lootChest);
         } else {
@@ -72,7 +72,7 @@ public class LootChestManager {
      * @return a LootChest object
      */
     public @Nullable LootChest getLootChest(UUID uuid) {
-        for (Map.Entry<Chunk, List<LootChest>> entry : chunkChestMap.entrySet()) {
+        for (Map.Entry<String, List<LootChest>> entry : chunkChestMap.entrySet()) {
             for (LootChest lootChest : entry.getValue()) {
                 if (lootChest.getUuid() == uuid) {
                     return lootChest;
@@ -83,31 +83,28 @@ public class LootChestManager {
     }
 
     public @Nullable LootChest getLootChest(Location location) {
-        List<LootChest> lootchestsList = chunkChestMap.get(location.getChunk());
+        List<LootChest> lootchestsList = chunkChestMap.get(parseChunk(location.getChunk()));
         if(lootchestsList == null) return null;
         if(lootchestsList.isEmpty()) return null;
         for (LootChest lootChest : lootchestsList) {
-            if (lootChest.getLocation() == location) {
+            if (lootChest.getLocation().equals(location)) {
                 return lootChest;
             }
         }
         return null;
     }
 
-    /**
-     * @param location Chunk-location of the chest
-     * @return List of chests inside the chunk of the given location
-     */
-    public @Nullable List<LootChest> getChests(Location location) {
-        return getChests(location.getChunk());
-    }
 
     /**
      * @param location Chunk-location of the chest
      * @return List of chests inside the chunk of the given location
      */
     public @Nullable List<LootChest> getChests(Chunk location) {
-        return chunkChestMap.get(location);
+        List<LootChest> a = chunkChestMap.get(parseChunk(location));
+        if (a != null) {
+            plugin.debug("hit!");
+        }
+        return a;
     }
 
     /**
@@ -124,5 +121,9 @@ public class LootChestManager {
      */
     public boolean isLootChest(Location location) {
         return getLootChest(location) != null;
+    }
+
+    public String parseChunk(Chunk chunk) {
+        return chunk.getX() + "|" + chunk.getZ();
     }
 }

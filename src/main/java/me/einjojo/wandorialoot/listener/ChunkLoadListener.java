@@ -6,9 +6,13 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import java.util.List;
+
+import com.comphenix.protocol.wrappers.BlockPosition;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.chest.LootChest;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 
 public class ChunkLoadListener implements PacketListener {
@@ -22,7 +26,13 @@ public class ChunkLoadListener implements PacketListener {
     @Override
     public void onPacketSending(PacketEvent event) {
         if (event.getPacketType() != PacketType.Play.Server.MAP_CHUNK) {
-
+            BlockPosition bpos = event.getPacket().getBlockPositionModifier().read(0);
+            Location loc = bpos.toLocation(event.getPlayer().getWorld());
+            if (plugin.getLootChestManager().isLootChest(loc)) {
+                if (event.getPacket().getBlockData().read(0).getType() != Material.CHEST) {
+                    event.setCancelled(true);
+                };
+            }
             return;
         }
         PacketContainer packet = event.getPacket();
