@@ -18,8 +18,8 @@ public class PlayersConfig extends ConfigurationFile {
         this.plugin = (WandoriaLoot) plugin;
     }
 
-    public Map<UUID, List<LootChest>> readConfig() {
-        Map<UUID, List<LootChest>> playerChestMap = new HashMap<>();
+    public Map<UUID, Set<LootChest>> readConfig() {
+        Map<UUID, Set<LootChest>> playerChestMap = new HashMap<>();
         Set<String> players = getFile().getKeys(false);
         for (String player : players) {
             UUID playerUUID = UUID.fromString(player);
@@ -31,13 +31,13 @@ public class PlayersConfig extends ConfigurationFile {
                 playersOpenedChests.add(lootChest);
             }
             plugin.debug(String.format("Found %d chests for player %s", playersOpenedChests.size(), player));
-            playerChestMap.put(playerUUID, playersOpenedChests.stream().toList());
+            playerChestMap.put(playerUUID, playersOpenedChests);
         }
         return playerChestMap;
     }
 
-    public void saveConfig(Map<UUID, List<LootChest>> playerChestMap) {
-        for (Map.Entry<UUID, List<LootChest>> entry : playerChestMap.entrySet()) {
+    public void saveConfig(Map<UUID, Set<LootChest>> playerChestMap) {
+        for (Map.Entry<UUID, Set<LootChest>> entry : playerChestMap.entrySet()) {
             List<String> uuidChests = new ArrayList<>();
             for (LootChest lc : entry.getValue()) {
                 uuidChests.add(lc.getUuid().toString());

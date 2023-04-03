@@ -72,11 +72,38 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder{
         return location;
     }
 
-    public void close(Player player) {
-        playerInventories.remove(player.getUniqueId());
+    /**
+     * Changes chest state
+     * @param player Packet Receiver
+     */
+    protected void close(Player player) {
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_ACTION);
+        packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
+        packet.getIntegers().write(0, 0);
+        ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
     }
 
-    public void open(Player player) {
+    /**
+     * Unrenders the chest and destroys the inventory for the player.
+     * @param player Packet receiver
+     */
+    protected void destroy(Player player) {
+        playerInventories.remove(player.getUniqueId());
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_CHANGE);
+
+        packet.getBlockPositionModifier().write(0, new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+        packet.getBlockData().write(0, WrappedBlockData.createData(Material.AIR));
+        Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), () -> {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
+        }, 1);
+    }
+
+    /**
+     * opens chest by packet
+     * Creates inventory, (generates loot), , opens inventory
+     * @param player Receiver
+     */
+    protected void open(Player player) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_ACTION);
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
         packet.getIntegers().write(0, 1);
@@ -143,6 +170,12 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder{
     @Override
     public Inventory getInventory() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("LootChest: { x:%.2f, y:%.2f, z:%.2f | UUID: %s }", location.getX(), location.getY(),
+                location.getZ(), uuid.toString());
     }
 }
 

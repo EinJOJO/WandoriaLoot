@@ -14,8 +14,8 @@ import java.util.*;
 public class LootChestManager {
 
     private final WandoriaLoot plugin;
-    private final Map<String, List<LootChest>> chunkChestMap = new HashMap<>();
-    private Map<UUID, List<LootChest>> playerChestMap;
+    private final Map<String, Set<LootChest>> chunkChestMap = new HashMap<>();
+    private Map<UUID, Set<LootChest>> playerChestMap;
     private final PlayersConfig playersConfig;
     private final LootChestConfig lootChestConfig;
 
@@ -26,10 +26,30 @@ public class LootChestManager {
 
     }
 
+    public void openLootChest(LootChest lootChest, Player player) {
+        lootChest.open(player);
+        setChestDiscovered(player, lootChest, true);
+    }
+
+    public void closeLootChest(LootChest lootChest, Player player) {
+        lootChest.close(player);
+    }
+
     public boolean isChestDiscovered(Player player, LootChest lootChest) {
         if (playerChestMap.get(player.getUniqueId()) == null) return false;
         return playerChestMap.get(player.getUniqueId()).contains(lootChest);
     }
+
+    public void setChestDiscovered(Player player, LootChest lootChest, boolean discovered) {
+        if (discovered) {
+            playerChestMap.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>()).add(lootChest);
+        } else {
+            playerChestMap.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>()).remove(lootChest);
+        }
+        plugin.debug(String.format("%s has discovered %s", player.getName(), lootChest.toString()));
+    }
+
+
 
     public void loadConfig() {
         List<LootChest> lcs = lootChestConfig.readConfig();
@@ -40,7 +60,7 @@ public class LootChestManager {
     }
     public void saveConfig() {
         List<LootChest> allChests = new ArrayList<>();
-        for (List<LootChest> chunkChests : chunkChestMap.values()) {
+        for (Set<LootChest> chunkChests : chunkChestMap.values()) {
             allChests.addAll(chunkChests);
         }
         lootChestConfig.saveConfig(allChests);
@@ -54,17 +74,9 @@ public class LootChestManager {
      */
     public void addChest(LootChest lootChest) {
         String lChunk = parseChunk(lootChest.getLocation().getChunk());
-        if (chunkChestMap.containsKey(lChunk)) {
-            chunkChestMap.get(lChunk).add(lootChest);
-        } else {
-            List<LootChest> list = new ArrayList<>();
-            list.add(lootChest);
-            chunkChestMap.put(lChunk, list);
-        }
+        chunkChestMap.computeIfAbsent(lChunk, k -> new HashSet<>()).add(lootChest);
         plugin.debug(String.format("Added Lootchest %s", lootChest.getUuid().toString()));
-
     }
-
 
     /**
      *
@@ -72,7 +84,7 @@ public class LootChestManager {
      * @return a LootChest object
      */
     public @Nullable LootChest getLootChest(UUID uuid) {
-        for (Map.Entry<String, List<LootChest>> entry : chunkChestMap.entrySet()) {
+        for (Map.Entry<String, Set<LootChest>> entry : chunkChestMap.entrySet()) {
             for (LootChest lootChest : entry.getValue()) {
                 if (lootChest.getUuid() == uuid) {
                     return lootChest;
@@ -83,7 +95,7 @@ public class LootChestManager {
     }
 
     public @Nullable LootChest getLootChest(Location location) {
-        List<LootChest> lootchestsList = chunkChestMap.get(parseChunk(location.getChunk()));
+        Set<LootChest> lootchestsList = chunkChestMap.get(parseChunk(location.getChunk()));
         if(lootchestsList == null) return null;
         if(lootchestsList.isEmpty()) return null;
         for (LootChest lootChest : lootchestsList) {
@@ -99,8 +111,8 @@ public class LootChestManager {
      * @param location Chunk-location of the chest
      * @return List of chests inside the chunk of the given location
      */
-    public @Nullable List<LootChest> getChests(Chunk location) {
-        List<LootChest> a = chunkChestMap.get(parseChunk(location));
+    public @Nullable Set<LootChest> getChests(Chunk location) {
+        Set<LootChest> a = chunkChestMap.get(parseChunk(location));
         if (a != null) {
             plugin.debug("hit!");
         }
@@ -126,4 +138,6 @@ public class LootChestManager {
     public String parseChunk(Chunk chunk) {
         return chunk.getX() + "|" + chunk.getZ();
     }
+
+
 }

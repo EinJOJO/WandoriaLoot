@@ -6,7 +6,6 @@ import me.einjojo.wandorialoot.chest.LootItem;
 import me.einjojo.wandorialoot.command.SetupCommand;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,8 +28,9 @@ public class InventoryCloseListener implements Listener {
             closeLootTable(e.getPlayer(), lootChest);
         } else {
             closeLootChest(e.getPlayer(), lootChest);
+            plugin.getLootChestManager().closeLootChest(lootChest, (Player) e.getPlayer());
         }
-        lootChest.close((Player) e.getPlayer());
+
     }
 
     public void closeLootTable(HumanEntity player, LootChest lootChest) {

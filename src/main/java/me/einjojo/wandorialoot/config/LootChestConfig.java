@@ -29,11 +29,10 @@ public class LootChestConfig extends ConfigurationFile {
                 Location location = Location.deserialize(section.getConfigurationSection("loc").getValues(false));
                 LootChest chest = new LootChest(UUID.fromString(key), location, null, null);
                 lootChests.add(chest);
-
-                plugin.debug(String.format("Read Lootchest#%s -> %f, %f, %f", key, location.getX(), location.getY(), location.getZ()));
             }
 
         }
+        plugin.debug(String.format("Loaded %d LootChests", lootChests.size()));
         return lootChests;
     }
 
