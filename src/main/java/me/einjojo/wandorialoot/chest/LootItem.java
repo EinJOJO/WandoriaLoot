@@ -54,7 +54,7 @@ public class LootItem implements ConfigurationSerializable {
 
     public static LootItem deserialize(Map<String, Object> map) {
         ItemStack item = ItemStack.deserialize((Map<String, Object>) map.get("item"));
-        float spawnRate = (float) map.get("spawnRate");
+        float spawnRate = Float.parseFloat(map.get("spawnRate").toString());
         int amountMin = (int) map.get("amountMin");
         int amountMax = (int) map.get("amountMax");
         return new LootItem(item, amountMin, amountMax, spawnRate);

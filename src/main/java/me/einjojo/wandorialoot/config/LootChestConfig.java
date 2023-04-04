@@ -3,13 +3,12 @@ package me.einjojo.wandorialoot.config;
 import me.einjojo.joslibrary.JoPlugin;
 import me.einjojo.joslibrary.config.ConfigurationFile;
 import me.einjojo.wandorialoot.chest.LootChest;
+import me.einjojo.wandorialoot.chest.LootItem;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class LootChestConfig extends ConfigurationFile {
 
@@ -26,8 +25,20 @@ public class LootChestConfig extends ConfigurationFile {
         for (String key: keys) {
             ConfigurationSection section = getFile().getConfigurationSection(key);
             if (section != null) {
-                lootChests.add(LootChest.deserialize(UUID.fromString(key), section.getValues(false)));
-
+                UUID uuid = UUID.fromString(key);
+                Location location = Location.deserialize(section.getConfigurationSection("loc").getValues(false));
+                List<Object> temporaryList = (List<Object>) section.getList("lootTable", new ArrayList<Object>());
+                LootItem[] lootItems = new LootItem[temporaryList.size()];
+                for (int i = 0; i < temporaryList.size(); i++) {
+                    lootItems[i] = LootItem.deserialize((Map<String, Object>) temporaryList.get(i));
+                }
+                List<Object> tempItemList = (List<Object>) section.getList("content", new ArrayList<Object>());
+                ItemStack[] content = new ItemStack[tempItemList.size()];
+                for (int i = 0; i < tempItemList.size(); i++) {
+                    content[i] = ItemStack.deserialize((Map<String, Object>) tempItemList.get(i));
+                }
+                LootChest lootChest = new LootChest(uuid, location, content, lootItems);
+                lootChests.add(lootChest);
             }
 
         }

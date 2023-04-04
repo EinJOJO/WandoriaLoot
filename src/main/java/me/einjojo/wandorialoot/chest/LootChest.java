@@ -256,24 +256,19 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         c.put("loc", location.serialize());
 
         List<Map<String, Object>> lootTablelist = new ArrayList<>();
-        for (LootItem lootItem : this.lootTable) {
-            lootTablelist.add(lootItem.serialize());
+        if (lootTable != null) {
+            for (LootItem lootItem : lootTable) {
+                lootTablelist.add(lootItem.serialize());
+            }
         }
         c.put("lootTable", lootTablelist);
-        c.put("content", content);
-        return c;
-    }
 
-    public static LootChest deserialize(UUID uuid, Map<String, Object> map) {
-        Location loc = Location.deserialize((Map<String, Object>) map.get("loc"));
-        List<LootItem> lootTable = new ArrayList<>();
-        //Make the code below more safe
-
-        for (Map<String, Object> lootItemMap : (List<Map<String, Object>>) map.getOrDefault("lootTable", new ArrayList<>())) {
-            lootTable.add(LootItem.deserialize(lootItemMap));
+        List<ItemStack> contentList = new ArrayList<>();
+        if (content != null) {
+            Collections.addAll(contentList, this.content);
         }
-        ItemStack[] content = (ItemStack[]) map.getOrDefault("content", null);
-        return new LootChest(uuid, loc, content, lootTable.toArray(new LootItem[]{}));
+        c.put("content", contentList);
+        return c;
     }
 
     @NotNull

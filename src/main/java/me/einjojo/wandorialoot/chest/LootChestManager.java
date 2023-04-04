@@ -17,7 +17,7 @@ public class LootChestManager {
 
     private final WandoriaLoot plugin;
     private final Map<String, Set<LootChest>> chunkChestMap = new HashMap<>(); // chunk-string pointing to set of LootChests inside that chunk
-    private Map<UUID, Set<LootChest>> playerChestMap; //player pointing to discovered chests
+    private Map<UUID, Set<LootChest>> playerChestMap = new HashMap<>(); //player pointing to discovered chests
     private final PlayersConfig playersConfig;
     private final LootChestConfig lootChestConfig;
 
