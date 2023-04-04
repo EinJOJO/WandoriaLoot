@@ -119,10 +119,16 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
     public void closeChest(Player player) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_ACTION);
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
+        //Close chest
         packet.getIntegers().write(0, 0);
         Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), ()-> {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
-        }, 2);
+            player.playSound(location, "minecraft:block.chest.close", 1, 1);
+        }, 5);
+    }
+
+    public void destroyInventory(Player player) {
+        playerInventories.remove(player.getUniqueId());
     }
 
     /**
@@ -135,7 +141,7 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         packet.getBlockData().write(0, WrappedBlockData.createData(Material.AIR));
 
         BukkitTask task = Bukkit.getScheduler().runTaskLater(WandoriaLoot.getInstance(), () -> {
-            playerInventories.remove(player.getUniqueId());
+            destroyInventory(player);
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
             playerChestDespawnTasks.remove(player.getUniqueId());
         }, 5 * 20L);
@@ -159,6 +165,7 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
         packet.getIntegers().write(0, 1);
         ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
+        player.playSound(location, "minecraft:block.chest.open", 1, 1);
 
         if (playerChestDespawnTasks.get(player.getUniqueId()) != null) {
             playerChestDespawnTasks.get(player.getUniqueId()).cancel();
