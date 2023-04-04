@@ -213,10 +213,12 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
      */
     private void createInventoryForSetup(Player player) {
         Inventory inventory = Bukkit.createInventory(this, 9 * 4, "§cLootTable einstellen");
-        for (LootItem lootItem : getLootTable()) {
-            if (lootItem.getItem() == null) continue;
-            ItemStack demo = new ItemStack(lootItem.getItem());
-            inventory.addItem(demo);
+        if (getLootTable() != null) {
+            for (LootItem lootItem : getLootTable()) {
+                if (lootItem.getItem() == null) continue;
+                ItemStack demo = new ItemStack(lootItem.getItem());
+                inventory.addItem(demo);
+            }
         }
         playerInventories.put(player.getUniqueId(), inventory);
         player.openInventory(inventory);
