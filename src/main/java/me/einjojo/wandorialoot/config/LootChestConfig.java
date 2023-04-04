@@ -26,9 +26,8 @@ public class LootChestConfig extends ConfigurationFile {
         for (String key: keys) {
             ConfigurationSection section = getFile().getConfigurationSection(key);
             if (section != null) {
-                Location location = Location.deserialize(section.getConfigurationSection("loc").getValues(false));
-                LootChest chest = new LootChest(UUID.fromString(key), location, null, null);
-                lootChests.add(chest);
+                lootChests.add(LootChest.deserialize(UUID.fromString(key), section.getValues(false)));
+
             }
 
         }
