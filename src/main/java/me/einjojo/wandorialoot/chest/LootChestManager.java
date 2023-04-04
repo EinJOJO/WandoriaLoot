@@ -3,10 +3,12 @@ package me.einjojo.wandorialoot.chest;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.config.LootChestConfig;
 import me.einjojo.wandorialoot.config.PlayersConfig;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -14,8 +16,8 @@ import java.util.*;
 public class LootChestManager {
 
     private final WandoriaLoot plugin;
-    private final Map<String, Set<LootChest>> chunkChestMap = new HashMap<>();
-    private Map<UUID, Set<LootChest>> playerChestMap;
+    private final Map<String, Set<LootChest>> chunkChestMap = new HashMap<>(); // chunk-string pointing to set of LootChests inside that chunk
+    private Map<UUID, Set<LootChest>> playerChestMap; //player pointing to discovered chests
     private final PlayersConfig playersConfig;
     private final LootChestConfig lootChestConfig;
 
@@ -27,12 +29,13 @@ public class LootChestManager {
     }
 
     public void openLootChest(LootChest lootChest, Player player) {
-        lootChest.open(player);
+        lootChest.openChest(player);
         setChestDiscovered(player, lootChest, true);
     }
 
     public void closeLootChest(LootChest lootChest, Player player) {
-        lootChest.close(player);
+        lootChest.closeChest(player);
+        lootChest.destroyChest(player);
     }
 
     public boolean isChestDiscovered(Player player, LootChest lootChest) {
@@ -75,7 +78,7 @@ public class LootChestManager {
     public void addChest(LootChest lootChest) {
         String lChunk = parseChunk(lootChest.getLocation().getChunk());
         chunkChestMap.computeIfAbsent(lChunk, k -> new HashSet<>()).add(lootChest);
-        plugin.debug(String.format("Added Lootchest %s", lootChest.getUuid().toString()));
+        plugin.debug(String.format("Added Lootchest %s", lootChest.toString()));
     }
 
     /**

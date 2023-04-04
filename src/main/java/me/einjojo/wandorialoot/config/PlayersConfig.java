@@ -28,7 +28,9 @@ public class PlayersConfig extends ConfigurationFile {
             for (String uid: chestUIDs) {
                 UUID uuid1 = UUID.fromString(uid);
                 LootChest lootChest = plugin.getLootChestManager().getLootChest(uuid1);
-                playersOpenedChests.add(lootChest);
+                if (lootChest != null) {
+                    playersOpenedChests.add(lootChest);
+                }
             }
             plugin.debug(String.format("Found %d chests for player %s", playersOpenedChests.size(), player));
             playerChestMap.put(playerUUID, playersOpenedChests);
@@ -42,7 +44,7 @@ public class PlayersConfig extends ConfigurationFile {
             for (LootChest lc : entry.getValue()) {
                 uuidChests.add(lc.getUuid().toString());
             }
-            getFile().createSection(entry.getKey().toString()).set("", uuidChests);
+            getFile().set(entry.getKey().toString(), uuidChests);
             plugin.debug(String.format("Saved %d LootChests for player %s", uuidChests.size(), entry.getKey().toString()));
 
         }

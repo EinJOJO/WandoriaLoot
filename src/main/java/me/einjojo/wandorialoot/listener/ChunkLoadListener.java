@@ -6,6 +6,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import java.util.List;
+import java.util.Set;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import me.einjojo.wandorialoot.WandoriaLoot;
@@ -25,32 +26,31 @@ public class ChunkLoadListener implements PacketListener {
 
     @Override
     public void onPacketSending(PacketEvent event) {
-        if (event.getPacketType() != PacketType.Play.Server.MAP_CHUNK) {
-            BlockPosition bpos = event.getPacket().getBlockPositionModifier().read(0);
-            Location loc = bpos.toLocation(event.getPlayer().getWorld());
-            if (plugin.getLootChestManager().isLootChest(loc)) {
-                if (event.getPacket().getBlockData().read(0).getType() != Material.CHEST) {
-                    event.setCancelled(true);
-                };
-            }
+        //Prevent loot chest from being replaced unless it is discovered
+        if (event.getPacketType() == PacketType.Play.Server.BLOCK_CHANGE) {
+            BlockPosition bps = event.getPacket().getBlockPositionModifier().read(0);
+            Location loc = bps.toLocation(event.getPlayer().getWorld());
+            if (!plugin.getLootChestManager().isLootChest(loc)) return;
+            if (plugin.getLootChestManager().isChestDiscovered(event.getPlayer(), plugin.getLootChestManager().getLootChest(loc))) return;
+            if (event.getPacket().getBlockData().read(0).getType() == Material.CHEST) return;
+            event.setCancelled(true);
             return;
         }
+        //Send loot chest to player if it is in the chunk that is being sent
         PacketContainer packet = event.getPacket();
         int x = packet.getIntegers().read(0);
         int z = packet.getIntegers().read(1);
-        List<LootChest> chests = plugin.getLootChestManager().getChests(event.getPlayer().getWorld().getChunkAt(x,z));
+        Set<LootChest> chests = plugin.getLootChestManager().getChests(event.getPlayer().getWorld().getChunkAt(x,z));
         if (chests == null) return;
         for (LootChest lc: chests) {
             if (!plugin.getLootChestManager().isChestDiscovered(event.getPlayer(), lc)) {
-                lc.render(event.getPlayer());
+                lc.renderChest(event.getPlayer());
             }
         }
     }
 
     @Override
-    public void onPacketReceiving(PacketEvent event) {
-
-    }
+    public void onPacketReceiving(PacketEvent event) {}
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {

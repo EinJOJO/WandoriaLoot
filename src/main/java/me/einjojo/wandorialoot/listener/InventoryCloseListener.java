@@ -26,8 +26,8 @@ public class InventoryCloseListener implements Listener {
         if (!(e.getInventory().getHolder() instanceof LootChest lootChest)) return;
         if (SetupCommand.setUpPlayer.contains(e.getPlayer().getUniqueId())) {
             closeLootTable(e.getPlayer(), lootChest);
+            lootChest.closeChest((Player)e.getPlayer());
         } else {
-            closeLootChest(e.getPlayer(), lootChest);
             plugin.getLootChestManager().closeLootChest(lootChest, (Player) e.getPlayer());
         }
 
@@ -35,18 +35,11 @@ public class InventoryCloseListener implements Listener {
 
     public void closeLootTable(HumanEntity player, LootChest lootChest) {
         ItemStack[] contents = lootChest.getPlayerInventories().get(player.getUniqueId()).getContents();
-        ArrayList<LootItem> lootItems = new ArrayList<>();
-        for (ItemStack content : contents) {
-            if (content == null || content.getType().equals(Material.AIR)) continue;
-            lootItems.add(new LootItem(content));
-        }
-        lootChest.setLootTable(lootItems.toArray(new LootItem[]{}));
+        lootChest.setLootTable(contents);
         player.sendMessage("LootTable updated!");
     }
 
 
-    public void closeLootChest(HumanEntity player, LootChest lootChest) {
 
-    }
 
 }

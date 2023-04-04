@@ -4,17 +4,14 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListeningWhitelist;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.MovingObjectPositionBlock;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.chest.LootChest;
 import me.einjojo.wandorialoot.command.SetupCommand;
-import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -28,19 +25,22 @@ public class InteractionListener implements Listener, PacketListener {
         this.plugin = plugin;
     }
 
+
+    /**
+     * Setup of the chest
+     */
     @EventHandler
-    public void onChestClick(PlayerInteractEvent e) {
+    public void setupChest(PlayerInteractEvent e) {
         if (e.getClickedBlock() == null) return;
         if (!(SetupCommand.setUpPlayer.contains(e.getPlayer().getUniqueId()))) return;
         e.setCancelled(true);
         Block block = e.getClickedBlock();
         block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, block.getType());
         block.setType(Material.AIR);
+        //Create lootChest
         LootChest lootChest = new LootChest(block.getLocation());
         plugin.getLootChestManager().addChest(lootChest);
-
-        SetupCommand.setUpPlayer.remove(e.getPlayer().getUniqueId());
-        lootChest.render(e.getPlayer());
+        lootChest.renderChest(e.getPlayer());
 
     }
 
@@ -59,12 +59,15 @@ public class InteractionListener implements Listener, PacketListener {
             LootChest lootChest = plugin.getLootChestManager().getLootChest(location);
             if (lootChest == null) return;
             e.setCancelled(true);
-            new BukkitRunnable() {
+            new BukkitRunnable() { // sync it
                 @Override
                 public void run() {
-                    lootChest.open(e.getPlayer());
+                    plugin.getLootChestManager().openLootChest(lootChest, e.getPlayer());
                 }
             }.runTask(plugin);
+        }
+        if (e.getPacketType() == PacketType.Play.Client.BLOCK_DIG) {
+            if (!(SetupCommand.setUpPlayer.contains(e.getPlayer().getUniqueId()))) return;
 
         }
     }
