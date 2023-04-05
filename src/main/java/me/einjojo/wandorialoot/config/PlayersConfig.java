@@ -23,10 +23,10 @@ public class PlayersConfig extends ConfigurationFile {
         Set<String> players = getFile().getKeys(false);
         for (String player : players) {
             UUID playerUUID = UUID.fromString(player);
-            List<String> chestUIDs = this.getFile().getStringList(player);
+            List<Object> chestUIDs = (List<Object>) getFile().getList(player);
             HashSet<LootChest> playersOpenedChests = new HashSet<>();
-            for (String uid: chestUIDs) {
-                UUID uuid1 = UUID.fromString(uid);
+            for (Object uid: chestUIDs) {
+                UUID uuid1 = UUID.fromString(String.valueOf(uid));
                 LootChest lootChest = plugin.getLootChestManager().getLootChest(uuid1);
                 if (lootChest != null) {
                     playersOpenedChests.add(lootChest);

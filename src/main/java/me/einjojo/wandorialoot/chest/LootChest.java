@@ -121,6 +121,7 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
         //Close chest
         packet.getIntegers().write(0, 0);
+        packet.getIntegers().write(1, 0);
         Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), ()-> {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
             player.playSound(location, "minecraft:block.chest.close", 1, 1);
@@ -144,7 +145,7 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
             destroyInventory(player);
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
             playerChestDespawnTasks.remove(player.getUniqueId());
-        }, 5 * 20L);
+        }, 2 * 20L);
 
         playerChestDespawnTasks.computeIfPresent(player.getUniqueId(), (uuid, bukkitTask) -> {
             bukkitTask.cancel();

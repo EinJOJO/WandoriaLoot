@@ -1,6 +1,7 @@
 package me.einjojo.wandorialoot.chest;
 
 import me.einjojo.wandorialoot.WandoriaLoot;
+import me.einjojo.wandorialoot.command.SetupCommand;
 import me.einjojo.wandorialoot.config.LootChestConfig;
 import me.einjojo.wandorialoot.config.PlayersConfig;
 import org.bukkit.Bukkit;
@@ -44,12 +45,15 @@ public class LootChestManager {
     }
 
     public void setChestDiscovered(Player player, LootChest lootChest, boolean discovered) {
+        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) return; // don't save chests if player is in setup mode
         if (discovered) {
             playerChestMap.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>()).add(lootChest);
+            plugin.debug(String.format("%s has discovered %s", player.getName(), lootChest.toString()));
         } else {
             playerChestMap.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>()).remove(lootChest);
+            plugin.debug(String.format("%s has undiscovered %s", player.getName(), lootChest.toString()));
         }
-        plugin.debug(String.format("%s has discovered %s", player.getName(), lootChest.toString()));
+
     }
 
 
@@ -89,7 +93,7 @@ public class LootChestManager {
     public @Nullable LootChest getLootChest(UUID uuid) {
         for (Map.Entry<String, Set<LootChest>> entry : chunkChestMap.entrySet()) {
             for (LootChest lootChest : entry.getValue()) {
-                if (lootChest.getUuid() == uuid) {
+                if (lootChest.getUuid().equals(uuid)) {
                     return lootChest;
                 }
             }
