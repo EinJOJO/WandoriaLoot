@@ -1,4 +1,5 @@
 # WandoriaLoot
+[![wakatime](https://wakatime.com/badge/user/8604eeb7-fa00-4008-be52-a3985d373289/project/277ae524-3c45-43fb-9bbd-e0456a8f7fd4.svg)](https://wakatime.com/badge/user/8604eeb7-fa00-4008-be52-a3985d373289/project/277ae524-3c45-43fb-9bbd-e0456a8f7fd4)
 MMO Lootchests like on wynncraft
 By sending the lootchest as a packet to the player, it allows every player to open a chest only once
 
