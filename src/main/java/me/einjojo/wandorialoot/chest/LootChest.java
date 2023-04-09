@@ -7,6 +7,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.command.SetupCommand;
+import me.einjojo.wandorialoot.loot.LootItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

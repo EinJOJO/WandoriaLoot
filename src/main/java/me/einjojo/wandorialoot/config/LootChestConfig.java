@@ -3,7 +3,7 @@ package me.einjojo.wandorialoot.config;
 import me.einjojo.joslibrary.JoPlugin;
 import me.einjojo.joslibrary.config.ConfigurationFile;
 import me.einjojo.wandorialoot.chest.LootChest;
-import me.einjojo.wandorialoot.chest.LootItem;
+import me.einjojo.wandorialoot.loot.LootItem;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;

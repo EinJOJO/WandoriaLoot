@@ -1,4 +1,4 @@
-package me.einjojo.wandorialoot.chest;
+package me.einjojo.wandorialoot.loot;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;

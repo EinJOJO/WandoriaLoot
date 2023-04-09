@@ -2,17 +2,13 @@ package me.einjojo.wandorialoot.listener;
 
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.chest.LootChest;
-import me.einjojo.wandorialoot.chest.LootItem;
 import me.einjojo.wandorialoot.command.SetupCommand;
-import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.ArrayList;
 
 public class InventoryCloseListener implements Listener {
 
