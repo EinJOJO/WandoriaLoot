@@ -45,7 +45,7 @@ public class LootTableConfigurationView extends View {
             itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         }
 
-
+        return null;
     }
 
     @NotNull
