@@ -32,6 +32,11 @@ public class LootTableView extends View {
     }
 
     @Override
+    public Inventory createInventory() {
+        return null;
+    }
+
+    @Override
     public void onClose() {
 
     }

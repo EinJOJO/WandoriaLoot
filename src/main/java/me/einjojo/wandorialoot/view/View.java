@@ -7,11 +7,14 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class View implements InventoryHolder, Listener {
 
     private final JoPlugin javaPlugin;
+    protected Inventory inventory;
     boolean registered = false;
     public View(JoPlugin plugin) {
         this.javaPlugin = plugin;
@@ -34,6 +37,7 @@ public abstract class View implements InventoryHolder, Listener {
     @EventHandler
     private void inventoryCloseListener(InventoryCloseEvent event) {
         if (event.getInventory().getHolder() != this) return;
+
         onClose();
     }
     @EventHandler
@@ -54,4 +58,17 @@ public abstract class View implements InventoryHolder, Listener {
 
     public abstract void onInteraction(InventoryClickEvent event);
 
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
+    }
+    public abstract Inventory createInventory();
+
+    @NotNull
+    @Override
+    public Inventory getInventory() {
+        if (inventory == null) {
+            setInventory(createInventory());
+        }
+        return inventory;
+    }
 }

@@ -14,10 +14,9 @@ import me.einjojo.wandorialoot.view.chest.LootChestLootView;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +28,7 @@ import java.util.*;
  */
 public class LootChest implements ConfigurationSerializable {
 
-    private final Map<UUID, BukkitTask> playerChestDespawnTasks = new HashMap<>();
+    private final Map<UUID, BukkitTask> playerChestRemoveTasks = new HashMap<>();
     private final UUID uuid;
     private final Location location;
     private LootTable lootTable;
@@ -100,20 +99,21 @@ public class LootChest implements ConfigurationSerializable {
         packet.getIntegers().write(1, 0);
         Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), ()-> {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
-            player.playSound(location, "minecraft:block.chest.close", 1, 1);
+            player.playSound(location, Sound.BLOCK_CHEST_CLOSE, 1, 1);
         }, 5);
     }
 
     public void openInventory(Player player) {
         View view = playerViews.get(player.getUniqueId());
         if (view instanceof LootChestConfigurationView) {
-            destroyInventory(player); // Destroy old view, to prevent old renderings
+            destroyInventory(player); // Destroy old view, to prevent opening Config-View twice
+            view = null;
         }
         if(view == null) { // Create new View if player has no View
             if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
-                view = new LootChestConfigurationView(WandoriaLoot.getInstance(), this);
+                view = new LootChestConfigurationView( this, player);
             } else {
-                view = new LootChestLootView(WandoriaLoot.getInstance(), this);
+                view = new LootChestLootView(this, player);
             }
             playerViews.put(player.getUniqueId(), view);
         }
@@ -141,14 +141,14 @@ public class LootChest implements ConfigurationSerializable {
         BukkitTask task = Bukkit.getScheduler().runTaskLater(WandoriaLoot.getInstance(), () -> {
             destroyInventory(player);
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
-            playerChestDespawnTasks.remove(player.getUniqueId());
+            playerChestRemoveTasks.remove(player.getUniqueId());
         }, 2 * 20L);
 
-        playerChestDespawnTasks.computeIfPresent(player.getUniqueId(), (uuid, bukkitTask) -> {
+        playerChestRemoveTasks.computeIfPresent(player.getUniqueId(), (uuid, bukkitTask) -> {
             bukkitTask.cancel();
             return task;
         });
-        playerChestDespawnTasks.putIfAbsent(player.getUniqueId(), task);
+        playerChestRemoveTasks.putIfAbsent(player.getUniqueId(), task);
     }
 
 
@@ -167,9 +167,9 @@ public class LootChest implements ConfigurationSerializable {
         ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
         player.playSound(location, "minecraft:block.chest.open", 1, 1);
 
-        if (playerChestDespawnTasks.get(player.getUniqueId()) != null) {
-            playerChestDespawnTasks.get(player.getUniqueId()).cancel();
-            playerChestDespawnTasks.remove(player.getUniqueId());
+        if (playerChestRemoveTasks.get(player.getUniqueId()) != null) {
+            playerChestRemoveTasks.get(player.getUniqueId()).cancel();
+            playerChestRemoveTasks.remove(player.getUniqueId());
         }
     }
 
@@ -182,9 +182,7 @@ public class LootChest implements ConfigurationSerializable {
 
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
         packet.getBlockData().write(0, WrappedBlockData.createData(Material.CHEST));
-        Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), () -> {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
-        }, 10);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), () -> ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet), 10);
     }
 
 
@@ -199,21 +197,35 @@ public class LootChest implements ConfigurationSerializable {
             }
         }
         c.put("uuid", uuid.toString());
-        c.put("content", contentList);
+        c.put("content", (!contentList.isEmpty()) ? contentList : null);
         c.put("location", location.serialize());
-        c.put("lootTable", lootTable.getUuid()); //points to lootTable
+        c.put("lootTable", (lootTable != null) ? lootTable.getUuid().toString() : null); //points to lootTable
         return c;
     }
 
     public static LootChest deserialize(Map<String, Object> map) {
-        List<Map<String,Object>> contentList = (List<Map<String,Object>>) map.get("content");
-        Location location1 = Location.deserialize((Map<String, Object>) map.get("loc"));
-        UUID chestUUID = UUID.fromString((String) map.get("uuid"));
-        UUID lootTableUUID = UUID.fromString((String) map.get("lootTable"));
-        LootTable lootTable = WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
-        List<Map<String,Object>> contentList1 = (List<Map<String,Object>>) map.get("content");
-        ItemStack[] content = contentList1.stream().map(ItemStack::deserialize).toArray(ItemStack[]::new);
-        return new LootChest(chestUUID, location1, content, lootTable);
+        try {
+            List<Map<String,Object>> contentList = (List<Map<String,Object>>) map.get("content");
+            Location location1 = Location.deserialize((Map<String, Object>) map.get("loc"));
+            UUID chestUUID = UUID.fromString((String) map.get("uuid"));
+
+            UUID lootTableUUID = UUID.fromString((String) map.get("lootTable"));
+            LootTable lootTable = WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
+            if (lootTable == null) {
+                throw new Exception("LootTable not found");
+            }
+
+            ItemStack[] content;
+            if (contentList.isEmpty()) {
+                content = null;
+            } else {
+                content = contentList.stream().map(ItemStack::deserialize).toArray(ItemStack[]::new);
+            }
+            return new LootChest(chestUUID, location1, content, lootTable);
+        } catch (Exception e) {
+            WandoriaLoot.getInstance().warn("Could not deserialize LootChest: " + e.getMessage());
+        }
+        return null;
     }
 
     @Override

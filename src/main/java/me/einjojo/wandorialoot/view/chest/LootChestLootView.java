@@ -7,19 +7,22 @@ import me.einjojo.wandorialoot.view.View;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 //TODO: Implement LootChestLootView
 public class LootChestLootView extends View {
 
+    private final int chestSize = 9*3;
     private final LootChest lootChest;
     private final WandoriaLoot plugin;
-    private Inventory inventory;
+    private final Player player;
 
-    public LootChestLootView(WandoriaLoot plugin, LootChest lootChest) {
-        super(plugin);
-        this.plugin = plugin;
+    public LootChestLootView(LootChest lootChest, Player player) {
+        super(WandoriaLoot.getInstance());
+        this.plugin = WandoriaLoot.getInstance();
         this.lootChest = lootChest;
+        this.player = player;
     }
 
     @Override
@@ -27,28 +30,33 @@ public class LootChestLootView extends View {
 
     }
 
-    private void createInventory() {
-        inventory = plugin.getServer().createInventory(this, 54, "Loot Chest");
-        if (lootChest.getContent() != null) {
-            //Use preconfigured content
-        } else if (lootChest.getLootTable() != null) {
-            //Use LootTable to generate content
-        } else {
-
+    private void placeItemsAtRandomSlots(ItemStack[] itemStacks) {
+        for (ItemStack itemStack : itemStacks) {
+            int slot = (int) (Math.random() * chestSize);
+            while (inventory.getItem(slot) != null) {
+                slot = (int) (Math.random() * chestSize);
+            }
+            inventory.setItem(slot, itemStack);
         }
+    }
+
+    public Inventory createInventory() {
+        Inventory inventory = plugin.getServer().createInventory(this, chestSize, "Loot Chest");
+        if (lootChest.getContent() != null) {
+            placeItemsAtRandomSlots(lootChest.getContent());
+        } else if (lootChest.getLootTable() != null) {
+            placeItemsAtRandomSlots(lootChest.getLootTable().generate());
+        } else {
+            //Not configured message
+            player.sendMessage(plugin.getPrefix() + "§cIt is empty because this loot chest is not configured yet!");
+        }
+        return inventory;
     }
 
     @Override
     public void onClose() {
-
+        plugin.debug(String.format("Player %s closed the lootchest %s", player.getName(), lootChest));
+        plugin.getLootChestManager().closeLootChest(lootChest, player);
     }
 
-    @NotNull
-    @Override
-    public Inventory getInventory() {
-        if (inventory == null) {
-            createInventory();
-        }
-        return inventory;
-    }
 }

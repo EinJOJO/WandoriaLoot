@@ -36,6 +36,11 @@ public class LootTableConfigurationView extends View {
         plugin.debug(event.getClick().toString());
     }
 
+    @Override
+    public Inventory createInventory() {
+        return null;
+    }
+
     private ItemStack convert(LootItem lootItem) {
         ItemStack itemStack = new ItemStack(lootItem.getItem());
         ItemMeta itemMeta = itemStack.getItemMeta();

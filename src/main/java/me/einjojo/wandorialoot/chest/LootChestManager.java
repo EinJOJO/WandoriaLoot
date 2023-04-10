@@ -4,12 +4,9 @@ import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.command.SetupCommand;
 import me.einjojo.wandorialoot.config.LootChestConfig;
 import me.einjojo.wandorialoot.config.PlayersConfig;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -78,12 +75,17 @@ public class LootChestManager {
 
     /**
      * Adds a lootChest
-     * @param lootChest Lootchest that should be registered inside the chunkmap
+     * @param lootChest LootChest that should be registered inside the ChunkMap
      */
-    public void addChest(LootChest lootChest) {
+    public boolean addChest(LootChest lootChest) {
+        boolean exists = isLootChest(lootChest.getLocation());
+        if (exists) {
+            return false;
+        }
         String lChunk = parseChunk(lootChest.getLocation().getChunk());
         chunkChestMap.computeIfAbsent(lChunk, k -> new HashSet<>()).add(lootChest);
-        plugin.debug(String.format("Added Lootchest %s", lootChest.toString()));
+        plugin.debug(String.format("Added LootChest %s", lootChest));
+        return true;
     }
 
     /**
@@ -103,10 +105,10 @@ public class LootChestManager {
     }
 
     public @Nullable LootChest getLootChest(Location location) {
-        Set<LootChest> lootchestsList = chunkChestMap.get(parseChunk(location.getChunk()));
-        if(lootchestsList == null) return null;
-        if(lootchestsList.isEmpty()) return null;
-        for (LootChest lootChest : lootchestsList) {
+        Set<LootChest> lootChestsList = chunkChestMap.get(parseChunk(location.getChunk()));
+        if(lootChestsList == null) return null;
+        if(lootChestsList.isEmpty()) return null;
+        for (LootChest lootChest : lootChestsList) {
             if (lootChest.getLocation().equals(location)) {
                 return lootChest;
             }
@@ -117,7 +119,7 @@ public class LootChestManager {
 
     /**
      * @param location Chunk-location of the chest
-     * @return List of chests inside the chunk of the given location
+     * @return Set of chests inside the chunk of the given location
      */
     public @Nullable Set<LootChest> getChests(Chunk location) {
         Set<LootChest> a = chunkChestMap.get(parseChunk(location));
@@ -128,16 +130,8 @@ public class LootChestManager {
     }
 
     /**
-     * @param block Block being checked
-     * @return whether the block's location matches a lootChest
-     */
-    public boolean isLootChest(Block block) {
-        return isLootChest(block.getLocation());
-    }
-
-    /**
      * @param location location of the chest
-     * @return whether on the location matches a lootchest
+     * @return whether on the location matches a LootChest
      */
     public boolean isLootChest(Location location) {
         return getLootChest(location) != null;

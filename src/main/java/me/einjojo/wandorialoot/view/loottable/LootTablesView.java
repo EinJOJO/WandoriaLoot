@@ -24,6 +24,11 @@ public class LootTablesView extends View {
 
     }
 
+    @Override
+    public Inventory createInventory() {
+        return null;
+    }
+
     @NotNull
     @Override
     public Inventory getInventory() {
