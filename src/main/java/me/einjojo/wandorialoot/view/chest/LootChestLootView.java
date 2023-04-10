@@ -26,9 +26,7 @@ public class LootChestLootView extends View {
     }
 
     @Override
-    public void onInteraction(InventoryClickEvent event) {
-
-    }
+    public void onInteraction(InventoryClickEvent event) {}
 
     private void placeItemsAtRandomSlots(ItemStack[] itemStacks) {
         for (ItemStack itemStack : itemStacks) {

@@ -20,6 +20,7 @@ public class LootChestConfig extends ConfigurationFile {
         List<LootChest> lootChests = configMap == null ? new ArrayList<>() :
                 configMap.stream()
                         .map(LootChest::deserialize)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList());
         plugin.debug(String.format("Loaded %d LootChests", lootChests.size()));
         return lootChests;

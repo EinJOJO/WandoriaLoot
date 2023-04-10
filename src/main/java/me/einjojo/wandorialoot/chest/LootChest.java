@@ -165,7 +165,7 @@ public class LootChest implements ConfigurationSerializable {
         packet.getBlockPositionModifier().write(0, new BlockPosition(location.toVector()));
         packet.getIntegers().write(0, 1);
         ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
-        player.playSound(location, "minecraft:block.chest.open", 1, 1);
+        player.playSound(location, Sound.BLOCK_CHEST_OPEN, 1, 1);
 
         if (playerChestRemoveTasks.get(player.getUniqueId()) != null) {
             playerChestRemoveTasks.get(player.getUniqueId()).cancel();
@@ -206,15 +206,11 @@ public class LootChest implements ConfigurationSerializable {
     public static LootChest deserialize(Map<String, Object> map) {
         try {
             List<Map<String,Object>> contentList = (List<Map<String,Object>>) map.get("content");
-            Location location1 = Location.deserialize((Map<String, Object>) map.get("loc"));
+            Location location1 = Location.deserialize((Map<String, Object>) map.get("location"));
             UUID chestUUID = UUID.fromString((String) map.get("uuid"));
 
             UUID lootTableUUID = UUID.fromString((String) map.get("lootTable"));
             LootTable lootTable = WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
-            if (lootTable == null) {
-                throw new Exception("LootTable not found");
-            }
-
             ItemStack[] content;
             if (contentList.isEmpty()) {
                 content = null;
@@ -224,6 +220,9 @@ public class LootChest implements ConfigurationSerializable {
             return new LootChest(chestUUID, location1, content, lootTable);
         } catch (Exception e) {
             WandoriaLoot.getInstance().warn("Could not deserialize LootChest: " + e.getMessage());
+            if (WandoriaLoot.getInstance().isDebug()) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
