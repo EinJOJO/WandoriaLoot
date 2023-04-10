@@ -6,19 +6,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LootItem implements ConfigurationSerializable {
-
+    public static AtomicInteger atomicInteger = new AtomicInteger(0);
+    private final int id;
     private final ItemStack item;
     private final float spawnRate;
     private final int amountMin;
     private final int amountMax;
 
     public LootItem(ItemStack itemStack) {
-        this(itemStack, itemStack.getAmount(), itemStack.getAmount(), 1f);
+        this(atomicInteger.getAndIncrement(), itemStack, itemStack.getAmount(), itemStack.getAmount(), 1f);
     }
 
-    public LootItem(ItemStack itemStack, int amountMin, int amountMax, float spawnRate) {
+    public LootItem(int id, ItemStack itemStack, int amountMin, int amountMax, float spawnRate) {
+        this.id= id;
         this.item = itemStack;
         this.amountMax = amountMax;
         this.amountMin = amountMin;
@@ -35,6 +38,10 @@ public class LootItem implements ConfigurationSerializable {
 
     public int getAmountMin() {
         return amountMin;
+    }
+
+    public int getID() {
+        return id;
     }
 
     public ItemStack getItem() {
@@ -57,6 +64,6 @@ public class LootItem implements ConfigurationSerializable {
         float spawnRate = Float.parseFloat(map.get("spawnRate").toString());
         int amountMin = (int) map.get("amountMin");
         int amountMax = (int) map.get("amountMax");
-        return new LootItem(item, amountMin, amountMax, spawnRate);
+        return new LootItem(atomicInteger.getAndIncrement(), item, amountMin, amountMax, spawnRate);
     }
 }

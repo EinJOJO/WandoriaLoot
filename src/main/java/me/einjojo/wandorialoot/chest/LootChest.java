@@ -8,6 +8,10 @@ import com.comphenix.protocol.wrappers.WrappedBlockData;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.command.SetupCommand;
 import me.einjojo.wandorialoot.loot.LootItem;
+import me.einjojo.wandorialoot.loot.LootTable;
+import me.einjojo.wandorialoot.view.chest.LootChestConfigurationView;
+import me.einjojo.wandorialoot.view.View;
+import me.einjojo.wandorialoot.view.chest.LootChestLootView;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,10 +33,11 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
     private final Map<UUID, BukkitTask> playerChestDespawnTasks = new HashMap<>();
     private final UUID uuid;
     private final Location location;
+    private LootTable lootTable;
     private final ItemStack[] content;
-    private LootItem[] lootTable;
 
-    private final HashMap<UUID, Inventory> playerInventories = new HashMap<>();
+
+    private final HashMap<UUID, View> playerViews = new HashMap<>();
 
     /**
      * Creates a new loot chest instance for the given location.
@@ -49,7 +54,7 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
      * @param content content of the loot chest
      * @param lootTable loot table of the loot chest
      */
-    public LootChest(UUID uuid, Location location, @Nullable ItemStack[] content, @Nullable LootItem[] lootTable) {
+    public LootChest(UUID uuid, Location location, @Nullable ItemStack[] content, @Nullable LootTable lootTable) {
         this.uuid = uuid;
         this.location = location;
         this.content = content;
@@ -66,45 +71,23 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
     /**
      * @return Loot table of the loot chest
      */
-    public LootItem[] getLootTable() {
+    public LootTable getLootTable() {
         return lootTable;
     }
 
     /**
      * @param lootTable Loot table of the loot chest
      */
-    public void setLootTable(LootItem[] lootTable) {
+    public void setLootTable(LootTable lootTable) {
         this.lootTable = lootTable;
     }
 
-    /**
-     * @param itemStacks Loot of the loot chest that will be converted to a loot table
-     */
-    public void setLootTable(ItemStack[] itemStacks) {
-        ArrayList<LootItem> lootItems = new ArrayList<>();
-        for (ItemStack content : itemStacks) {
-            if (content == null || content.getType().equals(Material.AIR)) continue;
-            lootItems.add(new LootItem(content));
-        }
-        setLootTable(lootItems.toArray(new LootItem[]{}));
-    }
 
     /**
      * @return random generated content from the loot table
      */
     public ItemStack[] generateContent() {
-        if (lootTable == null) {
-            setLootTable(new LootItem[0]);
-        }
-        ItemStack[] generated = new ItemStack[new Random().nextInt(27) + 1];
-        for (int i = 0; i < generated.length; i++) {
-            if (lootTable.length > 0) {
-                ItemStack gen = lootTable[new Random().nextInt(lootTable.length)].getItem();
-                gen.setAmount(i + 1);
-                generated[i] = gen;
-            }
-        }
-        return generated;
+        return lootTable.generate();
     }
 
     /**
@@ -130,7 +113,12 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
     }
 
     public void destroyInventory(Player player) {
-        playerInventories.remove(player.getUniqueId());
+        View view = playerViews.get(player.getUniqueId());
+        if(view == null) {
+            return;
+        }
+        view.unregister();
+        playerViews.remove(player.getUniqueId());
     }
 
     /**
@@ -156,6 +144,9 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
     }
 
 
+    public ItemStack[] getContent() {
+        return content;
+    }
 
     /**
      * Opens the chest by packet.
@@ -177,60 +168,24 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
             createInventoryForSetup(player);
         } else {
-            if (playerInventories.containsKey(player.getUniqueId())) {
-                player.openInventory(playerInventories.get(player.getUniqueId()));
+            if (playerViews.containsKey(player.getUniqueId())) {
+                playerViews.get(player.getUniqueId()).open(player);
             } else {
-                createInventoryAndFillWithLoot(player);
+                View view = new LootChestLootView(WandoriaLoot.getInstance(), this);
+                view.open(player);
             }
         }
     }
 
-    /**
-     * Creates inventory and fills it with the generated loot for the given player.
-     * @param player Player for whom to create the inventory
-     */
-    private void createInventoryAndFillWithLoot(Player player) {
-        Inventory inventory = Bukkit.createInventory(this, 9 * 3, "§8Lootchest");
-        ItemStack[] content;
-        if (this.content != null && this.content.length > 0) {
-            // Content is already set, thus no loot gen.
-            content = this.content;
-        } else {
-            //Generate it
-            content = generateContent();
-        }
 
-        //Place at random slots
-        Random random = new Random();
-        for (int i = 0; i < content.length; i++) {
-            int slot = random.nextInt(inventory.getSize());
-            if (inventory.getItem(slot) == null) {
-                inventory.setItem(slot, content[i]);
-            } else {
-                i--;
-            }
-        }
-
-        //Set inventory
-        playerInventories.put(player.getUniqueId(), inventory);
-        player.openInventory(inventory);
-    }
 
     /**
      * Creates inventory for setup and adds all the items from lootTable in it.
      * @param player Player for whom to create the inventory
      */
     private void createInventoryForSetup(Player player) {
-        Inventory inventory = Bukkit.createInventory(this, 9 * 4, "§cLootTable einstellen");
-        if (getLootTable() != null) {
-            for (LootItem lootItem : getLootTable()) {
-                if (lootItem.getItem() == null) continue;
-                ItemStack demo = new ItemStack(lootItem.getItem());
-                inventory.addItem(demo);
-            }
-        }
-        playerInventories.put(player.getUniqueId(), inventory);
-        player.openInventory(inventory);
+        View view = new LootChestConfigurationView(WandoriaLoot.getInstance(), this);
+        playerViews.put(player.getUniqueId(), view);
     }
 
     /**
@@ -247,23 +202,13 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         }, 10);
     }
 
-    public HashMap<UUID, Inventory> getPlayerInventories() {
-        return playerInventories;
-    }
 
     @NotNull
     @Override
     public Map<String, Object> serialize() {
         HashMap<String, Object> c = new HashMap<>();
         c.put("loc", location.serialize());
-
-        List<Map<String, Object>> lootTablelist = new ArrayList<>();
-        if (lootTable != null) {
-            for (LootItem lootItem : lootTable) {
-                lootTablelist.add(lootItem.serialize());
-            }
-        }
-        c.put("lootTable", lootTablelist);
+        c.put("lootTable", lootTable.getName());
 
         List<ItemStack> contentList = new ArrayList<>();
         if (content != null) {

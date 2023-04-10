@@ -16,7 +16,6 @@ public class LootChestConfig extends ConfigurationFile {
     public LootChestConfig(JoPlugin plugin) {
         super(plugin, "lootchests.yml");
         this.plugin = plugin;
-
     }
 
     public List<LootChest> readConfig() {
