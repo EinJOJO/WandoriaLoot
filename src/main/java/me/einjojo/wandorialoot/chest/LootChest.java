@@ -7,7 +7,6 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.command.SetupCommand;
-import me.einjojo.wandorialoot.loot.LootItem;
 import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.view.chest.LootChestConfigurationView;
 import me.einjojo.wandorialoot.view.View;
@@ -28,7 +27,7 @@ import java.util.*;
 /**
  * Represents a loot chest.
  */
-public class LootChest implements ConfigurationSerializable, InventoryHolder {
+public class LootChest implements ConfigurationSerializable {
 
     private final Map<UUID, BukkitTask> playerChestDespawnTasks = new HashMap<>();
     private final UUID uuid;
@@ -82,14 +81,6 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         this.lootTable = lootTable;
     }
 
-
-    /**
-     * @return random generated content from the loot table
-     */
-    public ItemStack[] generateContent() {
-        return lootTable.generate();
-    }
-
     /**
      * @return location of the loot chest
      */
@@ -110,6 +101,22 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
             player.playSound(location, "minecraft:block.chest.close", 1, 1);
         }, 5);
+    }
+
+    public void openInventory(Player player) {
+        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) { // Destroy inventory if player is in setup mode
+            destroyInventory(player);
+        }
+        View view = playerViews.get(player.getUniqueId());
+        if(view == null) { // Create new View if player has no View
+            if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
+                view = new LootChestConfigurationView(WandoriaLoot.getInstance(), this);
+            } else {
+                view = new LootChestLootView(WandoriaLoot.getInstance(), this);
+            }
+            playerViews.put(player.getUniqueId(), view);
+        }
+        view.open(player);
     }
 
     public void destroyInventory(Player player) {
@@ -150,7 +157,6 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
 
     /**
      * Opens the chest by packet.
-     * Generates loot, creates and opens inventory for the given player.
      * @param player Receiver
      */
     protected void openChest(Player player) {
@@ -164,28 +170,6 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
             playerChestDespawnTasks.get(player.getUniqueId()).cancel();
             playerChestDespawnTasks.remove(player.getUniqueId());
         }
-
-        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
-            createInventoryForSetup(player);
-        } else {
-            if (playerViews.containsKey(player.getUniqueId())) {
-                playerViews.get(player.getUniqueId()).open(player);
-            } else {
-                View view = new LootChestLootView(WandoriaLoot.getInstance(), this);
-                view.open(player);
-            }
-        }
-    }
-
-
-
-    /**
-     * Creates inventory for setup and adds all the items from lootTable in it.
-     * @param player Player for whom to create the inventory
-     */
-    private void createInventoryForSetup(Player player) {
-        View view = new LootChestConfigurationView(WandoriaLoot.getInstance(), this);
-        playerViews.put(player.getUniqueId(), view);
     }
 
     /**
@@ -207,21 +191,28 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
     @Override
     public Map<String, Object> serialize() {
         HashMap<String, Object> c = new HashMap<>();
-        c.put("loc", location.serialize());
-        c.put("lootTable", lootTable.getName());
-
-        List<ItemStack> contentList = new ArrayList<>();
+        List<Map<String, Object>> contentList = new ArrayList<>();
         if (content != null) {
-            Collections.addAll(contentList, this.content);
+            for (ItemStack itemStack : content) {
+                contentList.add(itemStack.serialize());
+            }
         }
+        c.put("uuid", uuid.toString());
         c.put("content", contentList);
+        c.put("location", location.serialize());
+        c.put("lootTable", lootTable.getUuid()); //points to lootTable
         return c;
     }
 
-    @NotNull
-    @Override
-    public Inventory getInventory() {
-        return null;
+    public static LootChest deserialize(Map<String, Object> map) {
+        List<Map<String,Object>> contentList = (List<Map<String,Object>>) map.get("content");
+        Location location1 = Location.deserialize((Map<String, Object>) map.get("loc"));
+        UUID chestUUID = UUID.fromString((String) map.get("uuid"));
+        UUID lootTableUUID = UUID.fromString((String) map.get("lootTable"));
+        LootTable lootTable = WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
+        List<Map<String,Object>> contentList1 = (List<Map<String,Object>>) map.get("content");
+        ItemStack[] content = contentList1.stream().map(ItemStack::deserialize).toArray(ItemStack[]::new);
+        return new LootChest(chestUUID, location1, content, lootTable);
     }
 
     @Override

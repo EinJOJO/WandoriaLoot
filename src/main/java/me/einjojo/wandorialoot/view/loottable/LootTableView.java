@@ -1,7 +1,8 @@
-package me.einjojo.wandorialoot.view;
+package me.einjojo.wandorialoot.view.loottable;
 
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.loot.LootTable;
+import me.einjojo.wandorialoot.view.View;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;

@@ -50,6 +50,14 @@ public class LootTable implements ConfigurationSerializable {
         return null; //TODO Implement
     }
 
+    public List<LootItem> getContent() {
+        return content;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
     @NotNull
     @Override
     public Map<String, Object> serialize() {

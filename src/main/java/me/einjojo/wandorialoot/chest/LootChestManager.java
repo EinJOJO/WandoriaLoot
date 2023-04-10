@@ -31,6 +31,7 @@ public class LootChestManager {
 
     public void openLootChest(LootChest lootChest, Player player) {
         lootChest.openChest(player);
+        lootChest.openInventory(player);
         setChestDiscovered(player, lootChest, true);
     }
 
@@ -45,7 +46,7 @@ public class LootChestManager {
     }
 
     public void setChestDiscovered(Player player, LootChest lootChest, boolean discovered) {
-        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) return; // don't save chests if player is in setup mode
+        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) return; // don't set chest discovered if player is in setup mode
         if (discovered) {
             playerChestMap.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>()).add(lootChest);
             plugin.debug(String.format("%s has discovered %s", player.getName(), lootChest.toString()));
