@@ -8,10 +8,9 @@ import com.comphenix.protocol.wrappers.MovingObjectPositionBlock;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.chest.LootChest;
 import me.einjojo.wandorialoot.command.SetupCommand;
-import org.bukkit.Effect;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -40,7 +39,21 @@ public class InteractionListener implements Listener, PacketListener {
         //Create lootChest
         LootChest lootChest = new LootChest(block.getLocation());
         plugin.getLootChestManager().addChest(lootChest);
-        lootChest.renderChest(e.getPlayer());
+
+        // Send BlockChange Packet to all players that see the chunk
+        Chunk chunk = block.getChunk();
+        int chunkX = chunk.getX();
+        int chunkZ = chunk.getZ();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getWorld() == block.getWorld()) {
+                int viewDistance = player.getClientViewDistance();
+                int playerChunkX = player.getLocation().getBlockX() >> 4;
+                int playerChunkZ = player.getLocation().getBlockZ() >> 4;
+                if (Math.abs(chunkX - playerChunkX) <= viewDistance && Math.abs(chunkZ - playerChunkZ) <= viewDistance) {
+                    lootChest.renderChest(player); // Sends BlockChange Packet
+                }
+            }
+        }
 
     }
 
@@ -68,8 +81,11 @@ public class InteractionListener implements Listener, PacketListener {
         }
         if (e.getPacketType() == PacketType.Play.Client.BLOCK_DIG) {
             if (!(SetupCommand.setUpPlayer.contains(e.getPlayer().getUniqueId()))) return;
+            //TODO: Do something when the block gets destroyed
+            // Maybe delete the chest from the list
 
-        }
+            }
+
     }
 
     @Override

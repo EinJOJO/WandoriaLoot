@@ -5,7 +5,6 @@ import com.comphenix.protocol.events.ListeningWhitelist;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
-import java.util.List;
 import java.util.Set;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
@@ -43,6 +42,7 @@ public class ChunkLoadListener implements PacketListener {
         Set<LootChest> chests = plugin.getLootChestManager().getChests(event.getPlayer().getWorld().getChunkAt(x,z));
         if (chests == null) return;
         for (LootChest lc: chests) {
+            //TODO: Implement Bypass Check or lootChestManager render logic
             if (!plugin.getLootChestManager().isChestDiscovered(event.getPlayer(), lc)) {
                 lc.renderChest(event.getPlayer());
             }

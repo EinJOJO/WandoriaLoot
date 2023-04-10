@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public class LootManager {
 
+    //TODO: Implement LootManager
     private final Map<UUID, LootTable> lootTables = new HashMap<>();
 
     public LootManager(){}

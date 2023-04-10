@@ -7,10 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class LootTableCommand extends AbstractCommand {
-
+    //TODO: Implement loottable command
     public LootTableCommand() {
         super("lootTable");
     }
+
 
     @Override
     protected @NotNull CommandResult runCommand(CommandSender commandSender, String... strings) {

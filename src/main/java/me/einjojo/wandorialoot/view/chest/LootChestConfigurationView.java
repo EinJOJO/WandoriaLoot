@@ -7,6 +7,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+//TODO: Implement LootChestConfigurationView
+// Select a loot table
 public class LootChestConfigurationView extends View {
 
     private final WandoriaLoot plugin;

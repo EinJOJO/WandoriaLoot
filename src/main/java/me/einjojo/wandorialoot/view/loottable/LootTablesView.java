@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+//TODO: Implement LootTablesView
 public class LootTablesView extends View {
     public LootTablesView(LootTable[] lootTables) {
         super(WandoriaLoot.getInstance());

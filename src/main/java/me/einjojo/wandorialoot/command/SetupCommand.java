@@ -28,7 +28,7 @@ public class SetupCommand extends AbstractCommand {
         } else {
             setUpPlayer.add(player.getUniqueId());
         }
-        player.sendMessage("ok");
+        player.sendMessage("ok"); //TODO: Do better messages
 
         return CommandResult.OK;
     }

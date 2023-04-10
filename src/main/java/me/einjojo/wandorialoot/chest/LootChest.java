@@ -90,6 +90,7 @@ public class LootChest implements ConfigurationSerializable {
 
     /**
      * @param player Player that receive the close packet
+     * //TODO: Fix chest close packet
      */
     public void closeChest(Player player) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_ACTION);
@@ -104,10 +105,10 @@ public class LootChest implements ConfigurationSerializable {
     }
 
     public void openInventory(Player player) {
-        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) { // Destroy inventory if player is in setup mode
-            destroyInventory(player);
-        }
         View view = playerViews.get(player.getUniqueId());
+        if (view instanceof LootChestConfigurationView) {
+            destroyInventory(player); // Destroy old view, to prevent old renderings
+        }
         if(view == null) { // Create new View if player has no View
             if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
                 view = new LootChestConfigurationView(WandoriaLoot.getInstance(), this);

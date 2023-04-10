@@ -9,6 +9,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+//TODO: Implement LootChestLootView
 public class LootChestLootView extends View {
 
     private final LootChest lootChest;

@@ -26,14 +26,6 @@ public class LootTable implements ConfigurationSerializable {
         this.content = lootItems;
     }
 
-
-    public void addContent(LootItem item){
-
-    }
-    public void removeContent(LootItem item){
-
-    }
-
     public String getName() {
         return name;
     }

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class PlayersConfig extends ConfigurationFile {
-
+//TODO: Refactor, this is a mess
 
     WandoriaLoot plugin;
     public PlayersConfig(JoPlugin plugin) {
