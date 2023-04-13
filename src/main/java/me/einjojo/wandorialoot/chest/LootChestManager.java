@@ -27,9 +27,9 @@ public class LootChestManager {
     }
 
     public void openLootChest(LootChest lootChest, Player player) {
+        if (isChestDiscovered(player, lootChest)) return;
         lootChest.openChest(player);
         lootChest.openInventory(player);
-        setChestDiscovered(player, lootChest, true);
     }
 
     public void closeLootChest(LootChest lootChest, Player player) {

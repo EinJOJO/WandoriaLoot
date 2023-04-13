@@ -1,6 +1,7 @@
 package me.einjojo.wandorialoot.view;
 
 import org.bukkit.Material;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -9,13 +10,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class GuiItem extends ItemStack {
-    private String displayName = "";
+    private String displayName = "§7";
     private String leftClickActionDescription = "";
     private String rightClickActionDescription = "";
 
     private List<String> baseLore = new ArrayList<>();
-    private Runnable rightClickAction;
-    private Runnable leftClickAction;
+    private ClickAction rightClickAction;
+    private ClickAction leftClickAction;
 
     public GuiItem(Material material) {
         super(material);
@@ -35,7 +36,7 @@ public class GuiItem extends ItemStack {
         build();
     }
 
-    public void build() {
+    private void build() {
         ItemMeta meta = this.getItemMeta();
         if (meta == null) { return; }
         List<String> lore = new ArrayList<>(baseLore);
@@ -55,30 +56,61 @@ public class GuiItem extends ItemStack {
 
     public GuiItem setBaseLore(List<String> baseLore) {
         this.baseLore = baseLore;
+        build();
         return this;
     }
 
-    public GuiItem setRightClickAction(Runnable rightClickAction, String description) {
+    public GuiItem setRightClickAction(ClickAction rightClickAction, String description) {
         this.rightClickAction = rightClickAction;
         this.rightClickActionDescription = description;
+        build();
         return this;
     }
 
-    public GuiItem setLeftClickAction(Runnable leftClickAction, String description) {
+    public GuiItem setLeftClickAction(ClickAction leftClickAction, String description) {
         this.leftClickAction = leftClickAction;
         this.leftClickActionDescription = description;
+        build();
         return this;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public GuiItem setDisplayName(String displayName) {
+        this.displayName = displayName;
+        build();
+        return this;
+    }
+
+    public void runClickActions(InventoryClickEvent event) {
+        if (event.isLeftClick()) {
+            if (leftClickAction != null) {
+                leftClickAction.run(event);
+            }
+        }
+        if (event.isRightClick()) {
+            if (rightClickAction != null) {
+                rightClickAction.run(event);
+            }
+        }
     }
 
     public List<String> getBaseLore() {
         return baseLore;
     }
 
-    public Runnable getLeftClickAction() {
+    public ClickAction getLeftClickAction() {
         return leftClickAction;
     }
 
-    public Runnable getRightClickAction() {
+    public ClickAction getRightClickAction() {
         return rightClickAction;
+    }
+
+    @FunctionalInterface
+    public interface ClickAction {
+        void run(InventoryClickEvent event);
     }
 }

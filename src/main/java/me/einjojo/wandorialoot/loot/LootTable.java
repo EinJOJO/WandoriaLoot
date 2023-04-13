@@ -1,8 +1,10 @@
 package me.einjojo.wandorialoot.loot;
 
+import me.einjojo.wandorialoot.WandoriaLoot;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -66,17 +68,26 @@ public class LootTable implements ConfigurationSerializable {
         return map;
     }
 
+    @Nullable
     public static LootTable deserialize(Map<String, Object> map) {
-        UUID id = UUID.fromString(map.get("id").toString());
-        String name = map.get("name").toString();
-        Rarity rarity =  Rarity.valueOf(map.get("rarity").toString());
-        ArrayList<LootItem> deserializedLootItems = new ArrayList<>();
-        List<Map<String, Object>> serializedLootItems = (List<Map<String, Object>>) map.get("content");
-        for (Map<String, Object> entry: serializedLootItems) {
-            deserializedLootItems.add(LootItem.deserialize(entry));
-        }
+        try {
+            UUID id = UUID.fromString(map.get("id").toString());
+            String name = map.get("name").toString();
+            Rarity rarity = Rarity.valueOf(map.get("rarity").toString());
+            ArrayList<LootItem> deserializedLootItems = new ArrayList<>();
+            List<Map<String, Object>> serializedLootItems = (List<Map<String, Object>>) map.get("content");
+            for (Map<String, Object> entry: serializedLootItems) {
+                deserializedLootItems.add(LootItem.deserialize(entry));
+            }
 
-        return new LootTable(id, name, rarity, deserializedLootItems);
+            return new LootTable(id, name, rarity, deserializedLootItems);
+        } catch (Exception e) {
+            WandoriaLoot.getInstance().warn("Could not deserialize loot table! Error:" + e.getMessage());
+            if (WandoriaLoot.getInstance().isDebug()) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 
 }

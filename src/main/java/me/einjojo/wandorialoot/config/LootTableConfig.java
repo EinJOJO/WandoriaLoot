@@ -23,6 +23,7 @@ public class LootTableConfig extends ConfigurationFile {
         return serialized == null ? Collections.emptySet() :
                 serialized.stream()
                         .map(LootTable::deserialize)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toSet());
     }
 

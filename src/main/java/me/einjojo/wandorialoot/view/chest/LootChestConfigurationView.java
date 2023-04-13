@@ -34,10 +34,38 @@ public class LootChestConfigurationView extends View {
     @Override
     public void onInteraction(InventoryClickEvent event) {
         event.setCancelled(true);
-        event.getWhoClicked().sendMessage(event.getSlot() + "");
-        plugin.debug(event.getAction().toString());
+        if (event.getCurrentItem() == null) return;
+        if (event.getCurrentItem() instanceof GuiItem) {
+            GuiItem guiItem = (GuiItem) event.getCurrentItem();
+            guiItem.runClickActions(event);
+
+            if (guiItem.getDisplayName().equals("§cLöschen")) {
+                player.sendMessage("Löschen.");
+            }
+        }
     }
 
+    private GuiItem.ClickAction lootTableLeftClickAction() {
+        return event -> {
+
+        };
+    }
+
+    private GuiItem.ClickAction lootTableRightClickAction() {
+        return event -> {
+
+        };
+    }
+    private GuiItem.ClickAction chestLeftClickAction() {
+        return event -> {
+
+        };
+    }
+    private GuiItem.ClickAction chestRightClickAction() {
+        return event -> {
+
+        };
+    }
 
 
     @Override
@@ -47,7 +75,7 @@ public class LootChestConfigurationView extends View {
         for (int i = 0; i < 9; i++) { // First row
             // Set glass based on lootchest  status
             if (lootChest.getContent() != null) {
-                inventory.setItem(i, new GuiItem(Material.GRAY_STAINED_GLASS_PANE, "§8Nutze §7Predefined-Content"));
+                inventory.setItem(i, new GuiItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§8Nutze §7Predefined-Content"));
             } else if (lootChest.getLootTable() != null) {
                 Rarity selectedRarity = lootChest.getLootTable().getRarity();
                 inventory.setItem(i, new GuiItem(selectedRarity.getGuiMaterial(), "§8Nutze" + selectedRarity.getColor() + selectedRarity.name() + " LootTable"));
@@ -57,34 +85,28 @@ public class LootChestConfigurationView extends View {
         }
         //Following rows
         for (int i = 9; i < inventory.getSize(); i++) {
-            inventory.setItem(i, new GuiItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE));
+            inventory.setItem(i, new GuiItem(Material.GRAY_STAINED_GLASS_PANE));
         }
-        inventory.setItem(5, new GuiItem(Material.SHULKER_BOX, "§aTest-Generation", "§7Öffne die Chest und schaue was drin ist!"));
+        inventory.setItem(4, new GuiItem(Material.SHULKER_BOX, "§aTest-Generation", "§7Öffne die Chest und schaue was drin ist!"));
         GuiItem lootTable = new GuiItem(Material.CHEST_MINECART, "§7LootTable", "§8Setze den möglichen Inhalt der Chest", "");
         if (lootChest.getLootTable() != null) {
-            lootTable.setLeftClickAction(() -> {
-                //TODO: LeftClickAction
-            }, "§aSetze die LootTable der Chest");
+            lootTable.setRightClickAction(lootTableRightClickAction(), "§cEntferne die LootTable der Chest");
             lootTable.getBaseLore().add("Aktuell ausgewählt:" + lootChest.getLootTable().getRarity().getColor() + lootChest.getLootTable().getName());
         }
-        lootTable.setRightClickAction(() -> {
-            //TODO: RightClickAction
-        }, "§cEntferne die LootTable der Chest");
+        lootTable.setLeftClickAction(lootTableLeftClickAction(), "§aSetze die LootTable der Chest");
+
+
         inventory.setItem(29, lootTable);
 
 
-        inventory.setItem(31, new GuiItem(Material.SUNFLOWER, "§7Information", "§8Setze die LootTable der Chest"));
+        inventory.setItem(31, new GuiItem(Material.SUNFLOWER, "§7Information", "§8"));
 
-        GuiItem contentItem = new GuiItem(Material.CHEST_MINECART, "§7Content",
+        GuiItem contentItem = new GuiItem(Material.CHEST, "§7Content",
                 "§8Setze den Inhalt der Chest", "");
-        contentItem.setLeftClickAction(() -> {
-            //TODO: LeftClickAction
-        }, "§aSetze den Inhalt der Chest");
+        contentItem.setLeftClickAction(chestLeftClickAction(), "§aSetze den Inhalt der Chest");
         if (lootChest.getContent() != null) {
             contentItem.getBaseLore().add("§7Aktuell definiert: " + "§aJa");
-            contentItem.setRightClickAction(() -> {
-                //TODO: RightClickAction
-            }, "§cEntferne den Inhalt der Chest");
+            contentItem.setRightClickAction(chestRightClickAction(), "§cEntferne den Inhalt der Chest");
         } else {
             contentItem.getBaseLore().add("§7Aktuell definiert: " + "§cNein");
         }

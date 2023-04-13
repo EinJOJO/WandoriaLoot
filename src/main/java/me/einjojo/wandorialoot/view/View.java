@@ -35,7 +35,7 @@ public abstract class View implements InventoryHolder, Listener {
     }
 
     @EventHandler
-    private void inventoryCloseListener(InventoryCloseEvent event) {
+    public void inventoryCloseListener(InventoryCloseEvent event) {
         if (event.getInventory().getHolder() != this) return;
 
         onClose();

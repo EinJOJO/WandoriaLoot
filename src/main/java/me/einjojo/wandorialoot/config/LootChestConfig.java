@@ -22,14 +22,14 @@ public class LootChestConfig extends ConfigurationFile {
                         .map(LootChest::deserialize)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
-        plugin.debug(String.format("Loaded %d LootChests", lootChests.size()));
+        plugin.info(String.format("Loaded %d LootChests", lootChests.size()));
         return lootChests;
     }
 
 
     public void saveConfig(List<LootChest> lootChests) {
         getFile().set("chests", lootChests.stream().map(LootChest::serialize).collect(Collectors.toList()));
-        plugin.debug(String.format("Saved %d LootChests", lootChests.size()));
+        plugin.info(String.format("Saved %d LootChests", lootChests.size()));
         saveFile();
     }
 }

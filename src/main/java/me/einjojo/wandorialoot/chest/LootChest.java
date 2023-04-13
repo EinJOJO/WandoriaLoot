@@ -142,6 +142,7 @@ public class LootChest implements ConfigurationSerializable {
             destroyInventory(player);
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
             playerChestRemoveTasks.remove(player.getUniqueId());
+            WandoriaLoot.getInstance().getLootChestManager().setChestDiscovered(player, this, true);
         }, 2 * 20L);
 
         playerChestRemoveTasks.computeIfPresent(player.getUniqueId(), (uuid, bukkitTask) -> {
@@ -209,10 +210,17 @@ public class LootChest implements ConfigurationSerializable {
             Location location1 = Location.deserialize((Map<String, Object>) map.get("location"));
             UUID chestUUID = UUID.fromString((String) map.get("uuid"));
 
-            UUID lootTableUUID = UUID.fromString((String) map.get("lootTable"));
-            LootTable lootTable = WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
+
+            LootTable lootTable;
+            if (map.get("lootTable") != null && map.get("lootTable").equals("null")) {
+                UUID lootTableUUID = UUID.fromString((String) map.get("lootTable"));
+                lootTable = WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
+            } else {
+                lootTable = null;
+            }
+
             ItemStack[] content;
-            if (contentList.isEmpty()) {
+            if (contentList == null || contentList.isEmpty()) {
                 content = null;
             } else {
                 content = contentList.stream().map(ItemStack::deserialize).toArray(ItemStack[]::new);
