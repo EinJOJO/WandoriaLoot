@@ -22,6 +22,7 @@ repositories {
 dependencies {
     implementation 'org.jetbrains:annotations:24.0.0'
     implementation("me.einjojo:JosLibrary:0.2-SNAPSHOT")
+    implementation 'com.github.stefvanschie.inventoryframework:IF:0.10.9'
     compileOnly group: "org.spigotmc", name:"spigot", version:"1.19.2-R0.1-SNAPSHOT"
     compileOnly group: "com.comphenix.protocol", name:"ProtocolLib", version: "5.0.0-SNAPSHOT"
 }
@@ -60,6 +61,7 @@ assemble{
 shadowJar {
     minimize()
     archiveFileName.set("${rootProject.name}-${project.version}.jar")
+    relocate 'com.github.stefvanschie.inventoryframework', 'me.einjojo.wandorialoot.util.inventoryframework'
 }
 
 
