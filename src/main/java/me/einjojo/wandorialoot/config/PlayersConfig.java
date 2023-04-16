@@ -39,16 +39,22 @@ public class PlayersConfig extends ConfigurationFile {
     }
 
     public void saveConfig(Map<UUID, Set<LootChest>> playerChestMap) {
-        for (Map.Entry<UUID, Set<LootChest>> entry : playerChestMap.entrySet()) {
-            List<String> uuidChests = new ArrayList<>();
-            for (LootChest lc : entry.getValue()) {
-                uuidChests.add(lc.getUuid().toString());
-            }
-            getFile().set(entry.getKey().toString(), uuidChests);
-            plugin.debug(String.format("Saved %d LootChests for player %s", uuidChests.size(), entry.getKey().toString()));
+        try {
+            for (Map.Entry<UUID, Set<LootChest>> entry : playerChestMap.entrySet()) {
+                List<String> uuidChests = new ArrayList<>();
+                for (LootChest lc : entry.getValue()) {
+                    uuidChests.add(lc.getUuid().toString());
+                }
+                getFile().set(entry.getKey().toString(), uuidChests);
+                plugin.debug(String.format("Saved %d LootChests for player %s", uuidChests.size(), entry.getKey().toString()));
 
+            }
+            saveFile();
+        } catch (Exception e) {
+            plugin.error("Failed to save PlayerConfig");
+            e.printStackTrace();
         }
-        saveFile();
+
     }
 
 }

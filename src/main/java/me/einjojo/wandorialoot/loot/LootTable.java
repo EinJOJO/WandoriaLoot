@@ -61,9 +61,9 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
             serializedLootItems.add(item.serialize());
         }
 
-        map.put("id", uuid);
+        map.put("id", uuid.toString());
         map.put("name", name);
-        map.put("rarity", rarity);
+        map.put("rarity", rarity.name());
         map.put("content", serializedLootItems);
         return map;
     }

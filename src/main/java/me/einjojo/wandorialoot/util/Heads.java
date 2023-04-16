@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.lang.reflect.Field;
 import java.util.UUID;
 
 public enum Heads {
@@ -28,17 +29,25 @@ public enum Heads {
         return getSkull(base64);
     }
 
-    public static ItemStack getSkull(String base64) {
-        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+    public static ItemStack getSkull(String value) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
 
-        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
-        profile.getProperties().put("textures", new Property("textures", base64));
 
-        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(profile.getId()));
-        skull.setItemMeta(skullMeta);
+        SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
+        GameProfile gameProfile = new GameProfile(UUID.randomUUID(), null);
+        gameProfile.getProperties().put("textures", new Property("textures", value));
 
-        return skull;
+        try {
+            Field profileField = skullMeta.getClass().getDeclaredField("profile");
+            profileField.setAccessible(true);
+            profileField.set(skullMeta, gameProfile);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+
+        item.setItemMeta(skullMeta);
+        return item;
     }
 
 }

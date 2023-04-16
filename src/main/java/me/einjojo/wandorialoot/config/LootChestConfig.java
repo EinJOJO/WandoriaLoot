@@ -28,8 +28,13 @@ public class LootChestConfig extends ConfigurationFile {
 
 
     public void saveConfig(List<LootChest> lootChests) {
-        getFile().set("chests", lootChests.stream().map(LootChest::serialize).collect(Collectors.toList()));
-        plugin.info(String.format("Saved %d LootChests", lootChests.size()));
-        saveFile();
+        try {
+            getFile().set("chests", lootChests.stream().map(LootChest::serialize).collect(Collectors.toList()));
+            plugin.info(String.format("Saved %d LootChests", lootChests.size()));
+            saveFile();
+        } catch (Exception e) {
+            plugin.error("Failed to save LootChests");
+            e.printStackTrace();
+        }
     }
 }

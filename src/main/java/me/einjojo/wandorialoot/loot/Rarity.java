@@ -1,19 +1,20 @@
 package me.einjojo.wandorialoot.loot;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 
 public enum Rarity {
 
-    COMMON(Material.WHITE_STAINED_GLASS_PANE, Color.WHITE), //gewöhnlich
-    UNCOMMON(Material.GREEN_STAINED_GLASS_PANE, Color.GREEN), //selten
-    RARE(Material.BLUE_STAINED_GLASS_PANE, Color.BLUE ), //sehr selten
-    MYTHIC(Material.PURPLE_STAINED_GLASS_PANE, Color.PURPLE), //mythisch
-    LEGENDARY(Material.ORANGE_STAINED_GLASS_PANE, Color.ORANGE); //legendär
+    COMMON(Material.WHITE_STAINED_GLASS_PANE, ChatColor.WHITE), //gewöhnlich
+    UNCOMMON(Material.GREEN_STAINED_GLASS_PANE, ChatColor.GREEN), //selten
+    RARE(Material.BLUE_STAINED_GLASS_PANE, ChatColor.BLUE ), //sehr selten
+    MYTHIC(Material.PURPLE_STAINED_GLASS_PANE, ChatColor.DARK_PURPLE), //mythisch
+    LEGENDARY(Material.ORANGE_STAINED_GLASS_PANE, ChatColor.YELLOW); //legendär
 
     private final Material guiMaterial;
-    private final Color color;
-    Rarity(Material guiMaterial, Color color) {
+    private final ChatColor color;
+    Rarity(Material guiMaterial, ChatColor color) {
         this.guiMaterial = guiMaterial;
         this.color = color;
     }
@@ -22,7 +23,7 @@ public enum Rarity {
         return guiMaterial;
     }
 
-    public Color getColor() {
+    public ChatColor getColor() {
         return color;
     }
 }

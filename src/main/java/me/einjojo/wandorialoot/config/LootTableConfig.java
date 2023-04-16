@@ -8,14 +8,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class LootTableConfig extends ConfigurationFile {
-
+    private final JoPlugin plugin;
     public LootTableConfig(JoPlugin plugin) {
-        super(plugin, "loottables.yml");
+        super(plugin, "loottables.yml"); this.plugin = plugin;
     }
 
     public void writeConfig(List<LootTable> lootTable) {
-        getFile().set("loottables", lootTable.stream().map(LootTable::serialize).collect(Collectors.toList()));
-        saveFile();
+        try {
+            getFile().set("loottables", lootTable.stream().map(LootTable::serialize).collect(Collectors.toList()));
+            saveFile();
+        } catch (Exception e) {
+            plugin.error("Failed to save LootTables");
+            e.printStackTrace();
+        }
+
     }
 
     public List<LootTable> readConfig() {

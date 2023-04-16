@@ -2,12 +2,17 @@ package me.einjojo.wandorialoot.util;
 
 import me.einjojo.wandorialoot.loot.LootItem;
 import me.einjojo.wandorialoot.loot.LootTable;
+import me.einjojo.wandorialoot.loot.Rarity;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ItemHelper extends ItemStack {
 
@@ -57,7 +62,8 @@ public class ItemHelper extends ItemStack {
     }
 
     public static ItemHelper lootTableItem(LootTable lootTable) {
-        ItemStack itemStack = switch (lootTable.getRarity()) {
+        Rarity rarity = lootTable.getRarity();
+        ItemStack itemStack = switch (rarity) {
             case COMMON -> Heads.COMMON_CHEST.getSkull();
             case UNCOMMON -> Heads.UNCOMMON_CHEST.getSkull();
             case RARE -> Heads.RARE_CHEST.getSkull();
@@ -65,12 +71,16 @@ public class ItemHelper extends ItemStack {
             case LEGENDARY -> Heads.LEGENDARY_CHEST.getSkull();
         };
         ArrayList<String> lore = new ArrayList<>();
-        lore.add("§7§oName: §f" + lootTable.getName());
-        lore.add("§7§oTyp: §b" + lootTable.getRarity().getColor() + lootTable.getRarity().name().toLowerCase());
-        lore.add("§7§oItems: §f" + lootTable.getContent().size());
+        ChatColor color = rarity.getColor();
+        lore.add(ChatColor.ITALIC + (ChatColor.GRAY + "Name: ") + color + lootTable.getName());
+        lore.add(ChatColor.ITALIC + (ChatColor.GRAY + "Typ: ") + color + lootTable.getRarity().name().toLowerCase());
+        lore.add(ChatColor.ITALIC + (ChatColor.GRAY + "Items: ") + color + lootTable.getContent().size());
 
+        //save LootTable UUID to persistent data container
+        Objects.requireNonNull(itemStack.getItemMeta()).getPersistentDataContainer()
+                .set(NamespacedKey.fromString("wandorialoot:loot_table"), PersistentDataType.STRING, lootTable.getUuid().toString());
 
-        return new ItemHelper(itemStack).setDisplayName(lootTable.getRarity().getColor() + lootTable.getName()).setLore(lore);
+        return new ItemHelper(itemStack).setDisplayName(color + lootTable.getName()).setLore(lore);
     }
 
     public static ItemHelper LootItemItem(LootItem item) {

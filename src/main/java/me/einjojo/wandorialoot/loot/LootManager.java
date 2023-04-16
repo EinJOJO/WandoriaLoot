@@ -19,8 +19,6 @@ public class LootManager {
     public LootManager(WandoriaLoot plugin){
         this.lootTableConfig = new LootTableConfig(plugin);
         this.plugin = plugin;
-        loadLootTables();
-
     }
 
     public void loadLootTables() {

@@ -20,7 +20,7 @@ public class SetupCommand extends AbstractCommand {
     private String syntaxOverwrite = "";
     private final WandoriaLoot plugin;
     public SetupCommand(WandoriaLoot plugin) {
-        super("lootSetup");
+        super("setup");
         this.plugin = plugin;
     }
 
@@ -63,7 +63,7 @@ public class SetupCommand extends AbstractCommand {
                     LootTable selectedEditLootTable;
                     if (!hasThree) {
                         LootTablesGui gui = new LootTablesGui(plugin.getLootManager().getLootTables());
-
+                        gui.show(player);
                     } else {
                         LootTable lootTable = plugin.getLootManager().getLootTable(lootTableName);
                         if (lootTable == null) {
@@ -76,7 +76,7 @@ public class SetupCommand extends AbstractCommand {
                 case "delete":
                     break;
                 case "show":
-                    new LootTablesGui(plugin.getLootManager().getLootTables().toArray(new LootTable[0])).show(player);
+                    new LootTablesGui(plugin.getLootManager().getLootTables()).show(player);
                     break;
                 default:
                     return syntaxOverwrite("/setup loot <create|edit|delete,show>");
@@ -94,8 +94,10 @@ public class SetupCommand extends AbstractCommand {
             StringUtil.copyPartialMatches(strings[0], Arrays.asList(subCommands), completions);
         }
         if (strings.length > 1 && strings[0].equalsIgnoreCase("loot")) {
-            final String[] subCommands = {"create", "edit", "delete", "show"};
-            StringUtil.copyPartialMatches(strings[1], Arrays.asList(subCommands), completions);
+            if (strings.length == 2) {
+                final String[] subCommands = {"create", "edit", "delete", "show"};
+                StringUtil.copyPartialMatches(strings[1], Arrays.asList(subCommands), completions);
+            }
             if (strings.length == 3 && !strings[1].equalsIgnoreCase("create")) {
                 plugin.getLootManager().getLootTables().stream()
                         .filter(lootTable -> lootTable.getName().toLowerCase().startsWith(strings[2].toLowerCase()))

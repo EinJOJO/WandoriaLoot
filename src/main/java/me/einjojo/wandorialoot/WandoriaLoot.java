@@ -18,14 +18,16 @@ public final class WandoriaLoot extends JoPlugin {
 
     @Override
     public void onPluginEnable() {
+        this.lootChestManager = new LootChestManager(this);
+        this.lootManager = new LootManager(this);
         registerListener(
                 new ChunkLoadListener(this),
                 new InteractionListener(this)
         );
         registerCommands(new SetupCommand(this));
-        this.lootChestManager = new LootChestManager(this);
-        this.lootManager = new LootManager(this);
+
         lootChestManager.loadConfig();
+        lootManager.loadLootTables();
     }
 
     @Override
