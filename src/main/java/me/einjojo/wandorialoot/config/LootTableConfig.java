@@ -13,18 +13,18 @@ public class LootTableConfig extends ConfigurationFile {
         super(plugin, "loottables.yml");
     }
 
-    public void writeConfig(Set<LootTable> lootTable) {
+    public void writeConfig(List<LootTable> lootTable) {
         getFile().set("loottables", lootTable.stream().map(LootTable::serialize).collect(Collectors.toList()));
         saveFile();
     }
 
-    public Set<LootTable> readConfig() {
+    public List<LootTable> readConfig() {
         List<Map<String, Object>> serialized = (List<Map<String, Object>>) getFile().getList("loottables");
-        return serialized == null ? Collections.emptySet() :
+        return serialized == null ? Collections.emptyList() :
                 serialized.stream()
                         .map(LootTable::deserialize)
                         .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
+                        .collect(Collectors.toList());
     }
 
 }

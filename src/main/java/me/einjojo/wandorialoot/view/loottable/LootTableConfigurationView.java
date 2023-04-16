@@ -34,6 +34,15 @@ public class LootTableConfigurationView extends View {
     public void onInteraction(InventoryClickEvent event) {
         Inventory inventory = event.getInventory();
         ItemStack currentItem = event.getCurrentItem();
+        int slot = event.getSlot();
+        // first and second row with guiItem black glass pane
+        for (int i = 0; i < 18; i++) {
+            //Stop it...        }
+        // Only 3-5 slots are interactable
+        if (slot < 2*9 || slot > 5*9) {
+            event.setCancelled(true);
+            return;
+        };
 
         plugin.debug(event.getAction().toString());
         plugin.debug(event.getClick().toString());
@@ -41,7 +50,13 @@ public class LootTableConfigurationView extends View {
 
     @Override
     public Inventory createInventory() {
-        return null;
+        Inventory inventory = Bukkit.createInventory(this, 54, "Loot Table Configuration");
+
+        for (LootItem lootItem : table.getContent()) {
+            inventory.addItem(convert(lootItem));
+        }
+
+        return inventory;
     }
 
     private ItemStack convert(LootItem lootItem) {
@@ -51,16 +66,8 @@ public class LootTableConfigurationView extends View {
             itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         }
 
-        return null;
-    }
+        itemStack.setItemMeta(itemMeta);
 
-    @NotNull
-    @Override
-    public Inventory getInventory() {
-        Inventory inventory = Bukkit.createInventory(this, 54, "Loot Table Configuration");
-
-
-
-        return inventory;
+        return itemStack;
     }
 }

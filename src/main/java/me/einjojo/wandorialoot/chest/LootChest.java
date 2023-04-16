@@ -31,7 +31,7 @@ public class LootChest implements ConfigurationSerializable {
     private final Map<UUID, BukkitTask> playerChestRemoveTasks = new HashMap<>();
     private final UUID uuid;
     private final Location location;
-    private LootTable lootTable;
+    private UUID lootTableUUID;
     private final ItemStack[] content;
 
 
@@ -52,11 +52,11 @@ public class LootChest implements ConfigurationSerializable {
      * @param content content of the loot chest
      * @param lootTable loot table of the loot chest
      */
-    public LootChest(UUID uuid, Location location, @Nullable ItemStack[] content, @Nullable LootTable lootTable) {
+    public LootChest(UUID uuid, Location location, @Nullable ItemStack[] content, @Nullable UUID lootTable) {
         this.uuid = uuid;
         this.location = location;
         this.content = content;
-        this.lootTable = lootTable;
+        this.lootTableUUID = lootTable;
     }
 
     /**
@@ -67,17 +67,22 @@ public class LootChest implements ConfigurationSerializable {
     }
 
     /**
+     * @deprecated
      * @return Loot table of the loot chest
      */
     public LootTable getLootTable() {
-        return lootTable;
+        return WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
+    }
+
+    public UUID getLootTableUUID() {
+        return lootTableUUID;
     }
 
     /**
      * @param lootTable Loot table of the loot chest
      */
     public void setLootTable(LootTable lootTable) {
-        this.lootTable = lootTable;
+        this.lootTableUUID = lootTable.getUuid();
     }
 
     /**
@@ -200,7 +205,7 @@ public class LootChest implements ConfigurationSerializable {
         c.put("uuid", uuid.toString());
         c.put("content", (!contentList.isEmpty()) ? contentList : null);
         c.put("location", location.serialize());
-        c.put("lootTable", (lootTable != null) ? lootTable.getUuid().toString() : null); //points to lootTable
+        c.put("lootTable", (lootTableUUID != null) ? lootTableUUID.toString() : null); //points to lootTable
         return c;
     }
 
@@ -212,20 +217,17 @@ public class LootChest implements ConfigurationSerializable {
 
 
             LootTable lootTable;
+            UUID lootTableUUID = null;
             if (map.get("lootTable") != null && map.get("lootTable").equals("null")) {
-                UUID lootTableUUID = UUID.fromString((String) map.get("lootTable"));
-                lootTable = WandoriaLoot.getInstance().getLootManager().getLootTable(lootTableUUID);
-            } else {
-                lootTable = null;
+                lootTableUUID = UUID.fromString((String) map.get("lootTable"));
             }
-
             ItemStack[] content;
             if (contentList == null || contentList.isEmpty()) {
                 content = null;
             } else {
                 content = contentList.stream().map(ItemStack::deserialize).toArray(ItemStack[]::new);
             }
-            return new LootChest(chestUUID, location1, content, lootTable);
+            return new LootChest(chestUUID, location1, content, lootTableUUID);
         } catch (Exception e) {
             WandoriaLoot.getInstance().warn("Could not deserialize LootChest: " + e.getMessage());
             if (WandoriaLoot.getInstance().isDebug()) {

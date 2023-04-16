@@ -97,4 +97,14 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
         }
         return this.name.compareTo(o.name);
     }
+
+    @Override
+    public String toString() {
+        return "LootTable {" +
+                "uuid=" + uuid +
+                ", content=" + content.size() +
+                ", name='" + name + '\'' +
+                ", rarity=" + rarity.toString() +
+                '}';
+    }
 }

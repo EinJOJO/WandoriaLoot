@@ -39,7 +39,8 @@ public class LootChestConfigurationView extends View {
             case 29:
                 if (event.isLeftClick()) {
                     if (lootTablesView == null) {
-                        lootTablesView = new LootTablesView(new LootTable[0], player, this);
+                        lootTablesView = new LootTablesView(plugin.getLootManager().getLootTables().values()
+                                .toArray(new LootTable[0]), player, this);
                     }
                     lootTablesView.open(player);
                 } else if (event.isRightClick()) {

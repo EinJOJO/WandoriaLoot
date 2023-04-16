@@ -1,9 +1,8 @@
 package me.einjojo.wandorialoot.command;
 
 import me.einjojo.joslibrary.command.AbstractCommand;
+import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.loot.LootTable;
-import me.einjojo.wandorialoot.view.loottable.LootTableConfigurationView;
-import me.einjojo.wandorialoot.view.loottable.LootTablesView;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -15,9 +14,11 @@ import java.util.*;
 public class SetupCommand extends AbstractCommand {
 
     public static Set<UUID> setUpPlayer = new HashSet<>();
-    String syntaxOverwrite = "";
-    public SetupCommand() {
+    private String syntaxOverwrite = "";
+    private final WandoriaLoot plugin;
+    public SetupCommand(WandoriaLoot plugin) {
         super("setup");
+        this.plugin = plugin;
     }
 
     @Override
@@ -47,12 +48,12 @@ public class SetupCommand extends AbstractCommand {
                 case "create":
                     if (!hasThree) {return syntaxOverwrite("/setup loot create <name>");}
                     LootTable table = new LootTable(lootTableName);
-                    new LootTableConfigurationView().open(player);
+                    plugin.getLootManager().addLootTable(table);
                     return CommandResult.OK;
 
                 case "edit":
                     if (!hasThree) {
-                        LootTablesView lootTablesView = new LootTablesView(player, new LootTable[0]);
+                        //LootTablesView lootTablesView = new LootTablesView(player, new LootTable[0]);
                     } else {
                     }
                     break;
