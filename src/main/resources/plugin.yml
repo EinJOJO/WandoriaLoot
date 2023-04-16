@@ -4,7 +4,7 @@ main: me.einjojo.wandorialoot.WandoriaLoot
 api-version: 1.19
 depend: [ ProtocolLib ]
 commands:
-  setup:
+  lootSetup:
     description: setup
   test:
     description: test

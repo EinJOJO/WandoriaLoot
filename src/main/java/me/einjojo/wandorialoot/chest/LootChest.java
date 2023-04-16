@@ -6,11 +6,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import me.einjojo.wandorialoot.WandoriaLoot;
-import me.einjojo.wandorialoot.command.SetupCommand;
 import me.einjojo.wandorialoot.loot.LootTable;
-import me.einjojo.wandorialoot.view.chest.LootChestConfigurationView;
-import me.einjojo.wandorialoot.view.View;
-import me.einjojo.wandorialoot.view.chest.LootChestLootView;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -34,8 +30,6 @@ public class LootChest implements ConfigurationSerializable {
     private UUID lootTableUUID;
     private final ItemStack[] content;
 
-
-    private final HashMap<UUID, View> playerViews = new HashMap<>();
 
     /**
      * Creates a new loot chest instance for the given location.
@@ -67,7 +61,6 @@ public class LootChest implements ConfigurationSerializable {
     }
 
     /**
-     * @deprecated
      * @return Loot table of the loot chest
      */
     public LootTable getLootTable() {
@@ -81,8 +74,9 @@ public class LootChest implements ConfigurationSerializable {
     /**
      * @param lootTable Loot table of the loot chest
      */
-    public void setLootTable(LootTable lootTable) {
-        this.lootTableUUID = lootTable.getUuid();
+    public void setLootTable(@Nullable LootTable lootTable) {
+        if (lootTable != null) this.lootTableUUID = lootTable.getUuid();
+        else this.lootTableUUID = null;
     }
 
     /**
@@ -109,29 +103,33 @@ public class LootChest implements ConfigurationSerializable {
     }
 
     public void openInventory(Player player) {
-        View view = playerViews.get(player.getUniqueId());
-        if (view instanceof LootChestConfigurationView) {
-            destroyInventory(player); // Destroy old view, to prevent opening Config-View twice
-            view = null;
-        }
-        if(view == null) { // Create new View if player has no View
-            if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
-                view = new LootChestConfigurationView( this, player);
-            } else {
-                view = new LootChestLootView(this, player);
-            }
-            playerViews.put(player.getUniqueId(), view);
-        }
-        view.open(player);
+        /**
+         * View view = playerViews.get(player.getUniqueId());
+         *         if (view instanceof LootChestConfigurationView) {
+         *             destroyInventory(player); // Destroy old view, to prevent opening Config-View twice
+         *             view = null;
+         *         }
+         *         if(view == null) { // Create new View if player has no View
+         *             if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
+         *                 view = new LootChestConfigurationView( this, player);
+         *             } else {
+         *                 view = new LootChestLootView(this, player);
+         *             }
+         *             playerViews.put(player.getUniqueId(), view);
+         *         }
+         *         view.open(player);
+         */
     }
 
     public void destroyInventory(Player player) {
-        View view = playerViews.get(player.getUniqueId());
+        /* View view = playerViews.get(player.getUniqueId());
         if(view == null) {
             return;
         }
         view.unregister();
         playerViews.remove(player.getUniqueId());
+
+         */
     }
 
     /**

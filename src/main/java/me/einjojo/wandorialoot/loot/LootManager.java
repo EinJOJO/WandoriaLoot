@@ -5,6 +5,7 @@ import me.einjojo.wandorialoot.config.LootTableConfig;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,6 +41,12 @@ public class LootManager {
         return lootTables.get(uuid);
     }
 
+    @Nullable
+    public LootTable getLootTable(String name) {
+        return lootTables.values().stream().filter(lootTable -> lootTable.getName().equals(name))
+                .findFirst().orElse(null);
+    }
+
     /**
      * Add a loot table to the manager
      * @param lootTable The loot table to add
@@ -68,10 +75,7 @@ public class LootManager {
         plugin.debug("Removed loottable: " + uuid);
     }
 
-    /**
-     * @return unmodifiable map of all loot tables
-     */
-    public Map<UUID, LootTable> getLootTables() {
-        return Map.copyOf(lootTables);
+    public List<LootTable> getLootTables() {
+        return List.copyOf(lootTables.values());
     }
 }
