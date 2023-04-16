@@ -3,9 +3,11 @@ package me.einjojo.wandorialoot.view.loottable;
 import me.einjojo.joslibrary.JoPlugin;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.loot.LootItem;
+import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.view.View;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -16,10 +18,11 @@ import org.jetbrains.annotations.NotNull;
 public class LootTableConfigurationView extends View {
 
     private final WandoriaLoot plugin;
-
-    public LootTableConfigurationView() {
+    private final LootTable table;
+    public LootTableConfigurationView(LootTable table) {
         super(WandoriaLoot.getInstance());
         plugin = WandoriaLoot.getInstance();
+        this.table = table;
     }
 
     @Override

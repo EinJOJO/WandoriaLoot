@@ -15,11 +15,14 @@ public abstract class View implements InventoryHolder, Listener {
 
     private final JoPlugin javaPlugin;
     protected Inventory inventory;
+    protected View parentView;
+
     boolean registered = false;
     public View(JoPlugin plugin) {
         this.javaPlugin = plugin;
         register();
     }
+
 
     public void register() {
         if (!registered) {
@@ -71,4 +74,9 @@ public abstract class View implements InventoryHolder, Listener {
         }
         return inventory;
     }
+
+    public View getParentView() {
+        return parentView;
+    }
+
 }

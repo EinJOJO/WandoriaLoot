@@ -1,6 +1,9 @@
 package me.einjojo.wandorialoot.command;
 
 import me.einjojo.joslibrary.command.AbstractCommand;
+import me.einjojo.wandorialoot.loot.LootTable;
+import me.einjojo.wandorialoot.view.loottable.LootTableConfigurationView;
+import me.einjojo.wandorialoot.view.loottable.LootTablesView;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -12,7 +15,7 @@ import java.util.*;
 public class SetupCommand extends AbstractCommand {
 
     public static Set<UUID> setUpPlayer = new HashSet<>();
-
+    String syntaxOverwrite = "";
     public SetupCommand() {
         super("setup");
     }
@@ -22,13 +25,45 @@ public class SetupCommand extends AbstractCommand {
         if (commandSender instanceof ConsoleCommandSender) {
             return CommandResult.NO_CONSOLE;
         }
-        Player player = (Player) commandSender;
-        if (setUpPlayer.contains(player.getUniqueId())) {
-            setUpPlayer.remove(player.getUniqueId());
-        } else {
-            setUpPlayer.add(player.getUniqueId());
+        if (strings.length == 0) {
+            return CommandResult.SYNTAX_ERROR;
         }
-        player.sendMessage("ok"); //TODO: Do better messages
+        final Player player = (Player) commandSender;
+        if (strings[0].equalsIgnoreCase("chest")) {
+            if (setUpPlayer.contains(player.getUniqueId())) {
+                setUpPlayer.remove(player.getUniqueId());
+                player.sendMessage("§aYou are no longer in setup mode");
+            } else {
+                setUpPlayer.add(player.getUniqueId());
+                player.sendMessage("§aYou are now in setup mode");
+            }
+        } else if (strings[0].equalsIgnoreCase("loot")) {
+            //LootTables
+            if (strings.length < 2) return syntaxOverwrite("/setup loot <create|edit|delete>");
+
+            boolean hasThree = strings.length >= 3;
+            String lootTableName = hasThree ? strings[2] : "";
+            switch (strings[1].toLowerCase()) {
+                case "create":
+                    if (!hasThree) {return syntaxOverwrite("/setup loot create <name>");}
+                    LootTable table = new LootTable(lootTableName);
+                    new LootTableConfigurationView().open(player);
+                    return CommandResult.OK;
+
+                case "edit":
+                    if (!hasThree) {
+                        LootTablesView lootTablesView = new LootTablesView(player, new LootTable[0]);
+                    } else {
+                    }
+                    break;
+                case "delete":
+                    break;
+                case "show":
+                    break;
+                default:
+                    return syntaxOverwrite("/setup loot <create|edit|delete,show>");
+            }
+        }
 
         return CommandResult.OK;
     }
@@ -44,8 +79,18 @@ public class SetupCommand extends AbstractCommand {
         return completions;
     }
 
+    private CommandResult syntaxOverwrite(String syntax) {
+        syntaxOverwrite = syntax;
+        return CommandResult.SYNTAX_ERROR;
+    }
+
     @Override
     public String getSyntax() {
+        if (syntaxOverwrite != null && !syntaxOverwrite.isEmpty()) {
+            String a = syntaxOverwrite;
+            syntaxOverwrite = null;
+            return a;
+        }
         return "/setup <chest|loot>";
     }
 

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class GuiItem extends ItemStack {
+
     private String displayName = "§7";
     private String leftClickActionDescription = "";
     private String rightClickActionDescription = "";
@@ -60,15 +61,14 @@ public class GuiItem extends ItemStack {
         return this;
     }
 
-    public GuiItem setRightClickAction(ClickAction rightClickAction, String description) {
-        this.rightClickAction = rightClickAction;
+    public GuiItem setRightClickAction(String description) {
         this.rightClickActionDescription = description;
         build();
         return this;
     }
 
-    public GuiItem setLeftClickAction(ClickAction leftClickAction, String description) {
-        this.leftClickAction = leftClickAction;
+
+    public GuiItem setLeftClickAction(String description) {
         this.leftClickActionDescription = description;
         build();
         return this;
@@ -84,30 +84,11 @@ public class GuiItem extends ItemStack {
         return this;
     }
 
-    public void runClickActions(InventoryClickEvent event) {
-        if (event.isLeftClick()) {
-            if (leftClickAction != null) {
-                leftClickAction.run(event);
-            }
-        }
-        if (event.isRightClick()) {
-            if (rightClickAction != null) {
-                rightClickAction.run(event);
-            }
-        }
-    }
 
     public List<String> getBaseLore() {
         return baseLore;
     }
 
-    public ClickAction getLeftClickAction() {
-        return leftClickAction;
-    }
-
-    public ClickAction getRightClickAction() {
-        return rightClickAction;
-    }
 
     @FunctionalInterface
     public interface ClickAction {

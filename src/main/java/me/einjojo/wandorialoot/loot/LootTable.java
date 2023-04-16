@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class LootTable implements ConfigurationSerializable {
+public class LootTable implements ConfigurationSerializable, Comparable<LootTable> {
     private final UUID uuid;
     private final List<LootItem> content;
     private final String name;
@@ -90,4 +90,11 @@ public class LootTable implements ConfigurationSerializable {
         }
     }
 
+    public int compareTo(@NotNull LootTable o) {
+        int rarityCompare = this.rarity.compareTo(o.rarity);
+        if (rarityCompare != 0) {
+            return rarityCompare;
+        }
+        return this.name.compareTo(o.name);
+    }
 }

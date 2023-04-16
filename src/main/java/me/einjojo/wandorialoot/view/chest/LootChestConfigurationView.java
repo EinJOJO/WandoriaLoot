@@ -2,18 +2,16 @@ package me.einjojo.wandorialoot.view.chest;
 
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.chest.LootChest;
+import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.loot.Rarity;
 import me.einjojo.wandorialoot.view.GuiItem;
 import me.einjojo.wandorialoot.view.View;
+import me.einjojo.wandorialoot.view.loottable.LootTablesView;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
 
 //TODO: Implement LootChestConfigurationView
 // Select a loot table
@@ -22,12 +20,14 @@ public class LootChestConfigurationView extends View {
     private final WandoriaLoot plugin;
     private final LootChest lootChest;
     private  Inventory inventory;
+    private LootTablesView lootTablesView;
     private final Player player;
     public LootChestConfigurationView( LootChest lootChest, Player player) {
         super(WandoriaLoot.getInstance());
-        this.plugin = WandoriaLoot.getInstance();
         this.lootChest = lootChest;
+        this.plugin = WandoriaLoot.getInstance();
         this.player = player;
+
     }
 
 
@@ -35,37 +35,25 @@ public class LootChestConfigurationView extends View {
     public void onInteraction(InventoryClickEvent event) {
         event.setCancelled(true);
         if (event.getCurrentItem() == null) return;
-        if (event.getCurrentItem() instanceof GuiItem) {
-            GuiItem guiItem = (GuiItem) event.getCurrentItem();
-            guiItem.runClickActions(event);
-
-            if (guiItem.getDisplayName().equals("§cLöschen")) {
-                player.sendMessage("Löschen.");
-            }
+        switch (event.getSlot()) {
+            case 29:
+                if (event.isLeftClick()) {
+                    if (lootTablesView == null) {
+                        lootTablesView = new LootTablesView(new LootTable[0], player, this);
+                    }
+                    lootTablesView.open(player);
+                } else if (event.isRightClick()) {
+                    lootChest.setLootTable(null);
+                    //player.openInventory(getInventory());
+                }
+                break;
+            case 31:
+                //Content
+                break;
         }
     }
 
-    private GuiItem.ClickAction lootTableLeftClickAction() {
-        return event -> {
 
-        };
-    }
-
-    private GuiItem.ClickAction lootTableRightClickAction() {
-        return event -> {
-
-        };
-    }
-    private GuiItem.ClickAction chestLeftClickAction() {
-        return event -> {
-
-        };
-    }
-    private GuiItem.ClickAction chestRightClickAction() {
-        return event -> {
-
-        };
-    }
 
 
     @Override
@@ -90,10 +78,10 @@ public class LootChestConfigurationView extends View {
         inventory.setItem(4, new GuiItem(Material.SHULKER_BOX, "§aTest-Generation", "§7Öffne die Chest und schaue was drin ist!"));
         GuiItem lootTable = new GuiItem(Material.CHEST_MINECART, "§7LootTable", "§8Setze den möglichen Inhalt der Chest", "");
         if (lootChest.getLootTable() != null) {
-            lootTable.setRightClickAction(lootTableRightClickAction(), "§cEntferne die LootTable der Chest");
+            lootTable.setRightClickAction( "§cEntferne die LootTable der Chest");
             lootTable.getBaseLore().add("Aktuell ausgewählt:" + lootChest.getLootTable().getRarity().getColor() + lootChest.getLootTable().getName());
         }
-        lootTable.setLeftClickAction(lootTableLeftClickAction(), "§aSetze die LootTable der Chest");
+        lootTable.setLeftClickAction("§aSetze die LootTable der Chest");
 
 
         inventory.setItem(29, lootTable);
@@ -103,10 +91,10 @@ public class LootChestConfigurationView extends View {
 
         GuiItem contentItem = new GuiItem(Material.CHEST, "§7Content",
                 "§8Setze den Inhalt der Chest", "");
-        contentItem.setLeftClickAction(chestLeftClickAction(), "§aSetze den Inhalt der Chest");
+        contentItem.setLeftClickAction("§aSetze den Inhalt der Chest");
         if (lootChest.getContent() != null) {
             contentItem.getBaseLore().add("§7Aktuell definiert: " + "§aJa");
-            contentItem.setRightClickAction(chestRightClickAction(), "§cEntferne den Inhalt der Chest");
+            contentItem.setRightClickAction("§cEntferne den Inhalt der Chest");
         } else {
             contentItem.getBaseLore().add("§7Aktuell definiert: " + "§cNein");
         }
