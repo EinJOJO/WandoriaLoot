@@ -46,15 +46,18 @@ public class SetupCommand extends AbstractCommand {
             if (strings.length < 2) return syntaxOverwrite("/setup loot <create|edit|delete>");
 
             boolean hasThree = strings.length >= 3;
-            String lootTableName = hasThree ? strings[2] : "";
+            StringBuilder lootTableName = new StringBuilder();
+            for (int i = 2; i < strings.length; i++) {
+                lootTableName.append(strings[i]);
+            }
             switch (strings[1].toLowerCase()) {
                 case "create":
                     if (!hasThree) {return syntaxOverwrite("/setup loot create <name>");}
-                    if (plugin.getLootManager().getLootTable(lootTableName) != null) {
+                    if (plugin.getLootManager().getLootTable(lootTableName.toString()) != null) {
                         player.sendMessage("§cLoot table already exists");
                         return CommandResult.FAILED;
                     };
-                    LootTable table = new LootTable(lootTableName);
+                    LootTable table = new LootTable(lootTableName.toString());
                     plugin.getLootManager().addLootTable(table);
                     player.sendMessage("§aLoot table created");
                     return CommandResult.OK;
@@ -65,7 +68,7 @@ public class SetupCommand extends AbstractCommand {
                         LootTablesGui gui = new LootTablesGui(plugin.getLootManager().getLootTables());
                         gui.show(player);
                     } else {
-                        LootTable lootTable = plugin.getLootManager().getLootTable(lootTableName);
+                        LootTable lootTable = plugin.getLootManager().getLootTable(lootTableName.toString());
                         if (lootTable == null) {
                             player.sendMessage("§cLoot table not found");
                             return CommandResult.FAILED;

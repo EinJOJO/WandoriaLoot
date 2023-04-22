@@ -13,9 +13,9 @@ public class LootItem implements ConfigurationSerializable {
     public static AtomicInteger atomicInteger = new AtomicInteger(0);
     private final int id;
     private final ItemStack item;
-    private final float spawnRate;
-    private final int amountMin;
-    private final int amountMax;
+    private float spawnRate;
+    private int amountMin;
+    private int amountMax;
 
     public LootItem(LootItem item) {
         this(item.getID(), item.getItem(), item.getAmountMin(), item.getAmountMax(), item.getSpawnRate());
@@ -47,6 +47,18 @@ public class LootItem implements ConfigurationSerializable {
 
     public int getID() {
         return id;
+    }
+
+    public void setAmountMax(int amountMax) {
+        this.amountMax = amountMax;
+    }
+
+    public void setAmountMin(int amountMin) {
+        this.amountMin = amountMin;
+    }
+
+    public void setSpawnRate(float spawnRate) {
+        this.spawnRate = spawnRate;
     }
 
     public ItemStack getItem() {

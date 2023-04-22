@@ -11,7 +11,7 @@ import java.util.*;
 public class LootTable implements ConfigurationSerializable, Comparable<LootTable> {
     private final UUID uuid;
     private List<LootItem> content;
-    private final String name;
+    private String name;
     private Rarity rarity;
 
     public LootTable(String name) {
@@ -26,6 +26,10 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
         this.uuid = uuid;
         this.rarity = rarity;
         this.content = lootItems;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getName() {

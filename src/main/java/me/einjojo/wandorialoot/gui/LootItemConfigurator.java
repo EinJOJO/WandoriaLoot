@@ -43,7 +43,7 @@ public class LootItemConfigurator extends ChestGui {
         this.returnPoint = returnPoint;
         setOnClose((e) -> {
             if (inputMode) return;
-            returnPoint.show(e.getPlayer());
+            returnPoint.returnToView(e.getPlayer());
             if (saved) {
                 return;
             }
@@ -172,7 +172,9 @@ public class LootItemConfigurator extends ChestGui {
             }));
         })), Slot.fromIndex(5));
         cp.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").setLore(List.of(String.format("§7Min: §d%d \n§7Max §d%d \n Spawnrate: §d%f \n", min, max, spawnRate))).build(), (e) -> {
-            lootItem = new LootItem(lootItem.getID(),lootItem.getItem(), min, max, spawnRate);
+            lootItem.setAmountMax(max);
+            lootItem.setAmountMin(min);
+            lootItem.setSpawnRate(spawnRate);
             setSaved(true);
             e.getWhoClicked().sendMessage("§aGespeichert");
             Sounds.GUI_CLICK.play(e.getWhoClicked());
