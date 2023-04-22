@@ -1,0 +1,179 @@
+package me.einjojo.wandorialoot.gui;
+
+import com.github.stefvanschie.inventoryframework.gui.GuiItem;
+import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
+import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
+import com.github.stefvanschie.inventoryframework.pane.Pane;
+import com.github.stefvanschie.inventoryframework.pane.StaticPane;
+import com.github.stefvanschie.inventoryframework.pane.util.Slot;
+import me.einjojo.joslibrary.util.ItemBuilder;
+import me.einjojo.wandorialoot.WandoriaLoot;
+import me.einjojo.wandorialoot.loot.LootItem;
+import me.einjojo.wandorialoot.util.Heads;
+import me.einjojo.wandorialoot.util.ItemHelper;
+import me.einjojo.wandorialoot.util.PlayerChatInput;
+import me.einjojo.wandorialoot.util.Sounds;
+import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+
+public class LootItemConfigurator extends ChestGui {
+
+    private LootItem lootItem;
+    private int max;
+    private int min;
+    private float spawnRate;
+    StaticPane cp;
+    private boolean saved;
+    private final ChestGui returnPoint;
+
+    public LootItemConfigurator(LootItem lootItem, ChestGui returnPoint) {
+        super(4, "LootItem einstellen");
+        this.lootItem = lootItem;
+        this.max = lootItem.getAmountMax();
+        this.min = lootItem.getAmountMin();
+        this.spawnRate = lootItem.getSpawnRate();
+        setSaved(true);
+        setOnTopClick(e -> e.setCancelled(true));
+        this.returnPoint = returnPoint;
+        setOnClose((e) -> {
+            if (saved) {
+                returnPoint.show(e.getPlayer());
+                return;
+            }
+            e.getPlayer().sendMessage("§cAbgebrochen");
+            Sounds.CANCEL.play(e.getPlayer());
+            returnPoint.show(e.getPlayer());
+        });
+        addPanes();
+        update();
+    }
+
+    public void addPanes() {
+        addPane(background());
+        addPane(item());
+        addPane(control());
+    }
+
+    public OutlinePane item() {
+        OutlinePane pane = new OutlinePane(4, 1, 1, 1);
+
+        pane.addItem(new GuiItem(new ItemBuilder(lootItem.getItem()).setLore(ItemHelper.getLootItemLore(lootItem)).build()));
+        pane.setRepeat(true);
+        pane.setPriority(Pane.Priority.LOW);
+        return pane;
+    }
+
+    public void afterError(HumanEntity humanEntity) {
+        show(humanEntity);
+        Sounds.ERROR.play(humanEntity);
+    }
+
+    public StaticPane control() {
+        if (cp == null) cp = new StaticPane(0, 0, 9, 1);
+        cp.clear();
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.BARRIER.getSkull()).setName("§cAbbrechen").build(), (e) -> e.getWhoClicked().closeInventory()), Slot.fromIndex(1));
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.MINUS.getSkull()).setName("§3Minimum ändern").addLore("§7Aktuell: §3" + lootItem.getAmountMin()).build(), (e -> {
+            new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§3Minimum §7eingeben", (input -> {
+                if (input == null) return;
+                try {
+                    int i = Integer.parseInt(input);
+                    if (i < 1) {
+                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als 0 sein");
+                        afterError(e.getWhoClicked());
+                        return;
+                    }
+                    if (min > max) {
+                        e.getWhoClicked().sendMessage("§cDie Zahl muss kleiner als das Maximum sein");
+                        afterError(e.getWhoClicked());
+                        return;
+                    }
+
+                    min = i;
+                    control();
+                    update();
+                    show(e.getWhoClicked());
+                    setSaved(false);
+                } catch (NumberFormatException ex) {
+                    e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
+                    afterError(e.getWhoClicked());
+                }
+
+            }));
+        })), Slot.fromIndex(3));
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.PLUS.getSkull()).setName("§cMaximum ändern").addLore("§7Aktuell: §c" + lootItem.getAmountMax()).build(),(e -> {
+            new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§cMaximum §7eingeben", (input -> {
+                if (input == null) return;
+                try {
+                    int i = Integer.parseInt(input);
+                    if (i < 1) {
+                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als 0 sein");
+                        afterError(e.getWhoClicked());
+                        return;
+                    }
+                    if (min>i) {
+                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als das Minimum sein");
+                        afterError(e.getWhoClicked());
+                        return;
+                    }
+                    max = i;
+                    control();
+                    setSaved(false);
+                    update();
+                } catch (NumberFormatException ex) {
+                    e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
+                    Sounds.ERROR.play(e.getWhoClicked());
+                }
+            }));
+        })), Slot.fromIndex(4));
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.PERCENT.getSkull()).setName("§fSpawnrate ändern").addLore("§7Aktuell: §f" + lootItem.getSpawnRate() * 100 + "%").build(),(e -> {
+            new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§fSpawnrate §7eingeben", (input -> {
+                if (input == null) return;
+                try {
+                    float i = Float.parseFloat(input);
+                    if (i < 0) {
+                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als 0 sein");
+                        afterError(e.getWhoClicked());
+                        return;
+                    }
+                    if (i > 100) {
+                        e.getWhoClicked().sendMessage("§cDie Zahl muss kleiner als 100 sein");
+                        afterError(e.getWhoClicked());
+                        return;
+                    }
+                    spawnRate = i / 100;
+                    show(e.getWhoClicked());
+                    control();
+                    setSaved(false);
+                    update();
+                } catch (NumberFormatException ex) {
+                    e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
+                    afterError(e.getWhoClicked());
+                }
+            }));
+        })), Slot.fromIndex(5));
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").setLore(ItemHelper.getLootItemLore(lootItem)).build(), (e) -> {
+            lootItem = new LootItem(lootItem.getID(),lootItem.getItem(), min, max, spawnRate);
+            setSaved(true);
+            e.getWhoClicked().sendMessage("§aGespeichert");
+            Sounds.GUI_CLICK.play(e.getWhoClicked());
+            e.getWhoClicked().closeInventory();
+        }), Slot.fromIndex(7));
+        return cp;
+    }
+
+    public OutlinePane background() {
+        OutlinePane pane = new OutlinePane(0, 0, 9, 4);
+        pane.addItem(new GuiItem(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("§8").build()));
+        pane.setRepeat(true);
+        pane.setPriority(Pane.Priority.LOWEST);
+        return pane;
+    }
+
+    public void setSaved(boolean saved) {
+        this.saved = saved;
+        update();
+    }
+}

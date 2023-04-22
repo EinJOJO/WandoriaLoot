@@ -5,6 +5,7 @@ import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.loot.LootItem;
 import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.loot.Rarity;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -80,6 +81,24 @@ public class ItemHelper extends ItemStack {
 
         return new ItemBuilder(itemStack).setName(color + lootTable.getName()).setLore(lore)
                 .setPersistentData("loottable", lootTable.getUuid().toString(), PersistentDataType.STRING);
+    }
+
+    public static ArrayList<String> getLootItemLore(LootItem lootItem) {
+        ItemMeta itemMeta = lootItem.getItem().getItemMeta();
+        if (itemMeta == null) {
+            itemMeta = Bukkit.getItemFactory().getItemMeta(lootItem.getItem().getType());
+        }
+        assert itemMeta != null;
+        List<String> baseLore = itemMeta.getLore();
+        ArrayList<String> lore = new ArrayList<>(baseLore == null ? List.of() : baseLore);
+        lore.add("§8§m=============================");
+        lore.add("§f§oID: §d" + lootItem.getID());
+        lore.add("§f§oSpawn Chance: §d" + lootItem.getSpawnRate() * 100 + "%");
+        lore.add("§f");
+        lore.add("§f§oMin Amount: §3" + lootItem.getAmountMin());
+        lore.add("§f§oMax Amount: §c" + lootItem.getAmountMax());
+        lore.add("§f");
+        return lore;
     }
 
 }

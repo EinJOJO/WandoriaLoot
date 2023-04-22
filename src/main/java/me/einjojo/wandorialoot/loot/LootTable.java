@@ -86,7 +86,10 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
             ArrayList<LootItem> deserializedLootItems = new ArrayList<>();
             List<Map<String, Object>> serializedLootItems = (List<Map<String, Object>>) map.get("content");
             for (Map<String, Object> entry: serializedLootItems) {
-                deserializedLootItems.add(LootItem.deserialize(entry));
+                LootItem lootItem = LootItem.deserialize(entry);
+                if (lootItem != null) {
+                    deserializedLootItems.add(lootItem);
+                }
             }
 
             return new LootTable(id, name, rarity, deserializedLootItems);

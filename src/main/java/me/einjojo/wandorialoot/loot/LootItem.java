@@ -1,5 +1,6 @@
 package me.einjojo.wandorialoot.loot;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,10 @@ public class LootItem implements ConfigurationSerializable {
     private final float spawnRate;
     private final int amountMin;
     private final int amountMax;
+
+    public LootItem(LootItem item) {
+        this(item.getID(), item.getItem(), item.getAmountMin(), item.getAmountMax(), item.getSpawnRate());
+    }
 
     public LootItem(ItemStack itemStack) {
         this(atomicInteger.getAndIncrement(), itemStack, itemStack.getAmount(), itemStack.getAmount(), 1f);
@@ -61,6 +66,7 @@ public class LootItem implements ConfigurationSerializable {
 
     public static LootItem deserialize(Map<String, Object> map) {
         ItemStack item = ItemStack.deserialize((Map<String, Object>) map.get("item"));
+        if (item.getType() == Material.AIR) return null;
         float spawnRate = Float.parseFloat(map.get("spawnRate").toString());
         int amountMin = (int) map.get("amountMin");
         int amountMax = (int) map.get("amountMax");

@@ -7,6 +7,7 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import me.einjojo.joslibrary.util.ItemBuilder;
+import me.einjojo.wandorialoot.gui.LootItemConfigurator;
 import me.einjojo.wandorialoot.loot.LootItem;
 import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.util.Heads;
@@ -20,6 +21,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LootTableGui extends ChestGui {
@@ -34,7 +36,7 @@ public class LootTableGui extends ChestGui {
         this.lootTable = lootTable;
         setOnBottomClick(this::selectItemClick);
         setOnTopClick(e -> e.setCancelled(true));
-        //put all loot items in a map with their id as key
+
         lootItemsList = lootTable.getContent().stream().collect(HashMap::new, (m, v) -> m.put(v.getID(), v), HashMap::putAll);
         setOnClose((e) -> {
             HumanEntity p = e.getPlayer();
@@ -88,19 +90,13 @@ public class LootTableGui extends ChestGui {
             e.getWhoClicked().sendMessage("§aLootTable gespeichert");
             e.getWhoClicked().closeInventory();
         }), Slot.fromIndex(5));
+        staticPane.setPriority(Pane.Priority.HIGH);
         return staticPane;
     }
 
 
     private GuiItem guiLootItem(LootItem lootItem) {
-        ArrayList<String> lore = new ArrayList<>(new ItemBuilder(lootItem.getItem()).getLore());
-        lore.add("§8§m=============================");
-        lore.add("§f§oID: §d" + lootItem.getID());
-        lore.add("§f§oSpawn Chance: §d" + lootItem.getSpawnRate() * 100 + "%");
-        lore.add("§f");
-        lore.add("§f§oMin Amount: §3" + lootItem.getAmountMin());
-        lore.add("§f§oMax Amount: §c" + lootItem.getAmountMax());
-        lore.add("§f");
+        ArrayList<String> lore = ItemHelper.getLootItemLore(lootItem);
         lore.add("§7Linksklick zum §abearbeiten");
         lore.add("§7Rechtsklick zum §centfernen");
         return new GuiItem(new ItemBuilder(lootItem.getItem()).setLore(lore).setPersistentData("lootItem", lootItem.getID(), PersistentDataType.INTEGER).build(), (e -> {
@@ -108,6 +104,10 @@ public class LootTableGui extends ChestGui {
             Sounds.GUI_CLICK.play(e.getWhoClicked());
             ItemStack item = e.getCurrentItem();
             Integer lootID = (Integer) new ItemBuilder(item).getPersistentData("lootItem", PersistentDataType.INTEGER);
+            if (e.isLeftClick()) {
+                new LootItemConfigurator(lootItemsList.get(lootID), this).show(e.getWhoClicked());
+                return;
+            }
             if(e.isRightClick()) {
                 lootItemsList.remove(lootID);
                 loadContentPane();
@@ -117,9 +117,11 @@ public class LootTableGui extends ChestGui {
     }
 
     public OutlinePane loadContentPane() {
-        contentPane = new OutlinePane(2, 0, 7, 6);
-        contentPane.setPriority(Pane.Priority.LOW);
-
+        if (contentPane == null) {
+            contentPane = new OutlinePane(2, 0, 7, 6);
+            contentPane.setPriority(Pane.Priority.NORMAL);
+        }
+        contentPane.clear();
         for (LootItem lootItem : lootItemsList.values()) {
             contentPane.addItem(guiLootItem(lootItem));
         }
@@ -130,6 +132,8 @@ public class LootTableGui extends ChestGui {
     public OutlinePane divisionPane() {
         OutlinePane pane = new OutlinePane(0, 0, 2, 6);
         pane.addItem(new GuiItem(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("§8").build()));
+        pane.setRepeat(true);
+        pane.setPriority(Pane.Priority.LOWEST);
         return pane;
     }
 }
