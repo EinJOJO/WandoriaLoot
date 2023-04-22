@@ -18,6 +18,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 public class LootTableGui extends ChestGui {
     private boolean saved;
+    private boolean editsItem = false;
     private final String baseTitle;
     private final Map<Integer, LootItem> lootItemsList;
     private final LootTable lootTable;
@@ -39,6 +41,7 @@ public class LootTableGui extends ChestGui {
 
         lootItemsList = lootTable.getContent().stream().collect(HashMap::new, (m, v) -> m.put(v.getID(), v), HashMap::putAll);
         setOnClose((e) -> {
+            if (editsItem) return;
             HumanEntity p = e.getPlayer();
             new LootTablesGui().show(p);
             if (saved) {
@@ -60,11 +63,12 @@ public class LootTableGui extends ChestGui {
 
     public void selectItemClick(InventoryClickEvent e) {
         e.setCancelled(true);
-        Sounds.GUI_CLICK.play(e.getWhoClicked());
         ItemStack itemStack = e.getCurrentItem();
         if (itemStack == null) return;
+        if (itemStack.getType() == Material.AIR) return;
         LootItem lootItem = new LootItem(itemStack);
         lootItemsList.put(lootItem.getID(), lootItem);
+        Sounds.GUI_CLICK.play(e.getWhoClicked());
         loadContentPane();
         setSaved(false);
     }
@@ -75,7 +79,13 @@ public class LootTableGui extends ChestGui {
         addPane(buttons());
     }
 
+    public void returnToView(HumanEntity p) {
+        show(p);
+        editsItem = false;
+        loadContentPane();
+        update();
 
+    }
 
     private StaticPane buttons() {
         StaticPane staticPane = new StaticPane(0,0,1,6);
@@ -105,6 +115,7 @@ public class LootTableGui extends ChestGui {
             ItemStack item = e.getCurrentItem();
             Integer lootID = (Integer) new ItemBuilder(item).getPersistentData("lootItem", PersistentDataType.INTEGER);
             if (e.isLeftClick()) {
+                editsItem = true;
                 new LootItemConfigurator(lootItemsList.get(lootID), this).show(e.getWhoClicked());
                 return;
             }

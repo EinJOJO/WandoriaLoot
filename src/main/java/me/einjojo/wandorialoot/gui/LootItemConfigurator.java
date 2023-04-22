@@ -8,6 +8,7 @@ import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import me.einjojo.joslibrary.util.ItemBuilder;
 import me.einjojo.wandorialoot.WandoriaLoot;
+import me.einjojo.wandorialoot.gui.table.LootTableGui;
 import me.einjojo.wandorialoot.loot.LootItem;
 import me.einjojo.wandorialoot.util.Heads;
 import me.einjojo.wandorialoot.util.ItemHelper;
@@ -18,18 +19,20 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LootItemConfigurator extends ChestGui {
 
     private LootItem lootItem;
+    private boolean inputMode;
     private int max;
     private int min;
     private float spawnRate;
     StaticPane cp;
     private boolean saved;
-    private final ChestGui returnPoint;
+    private final LootTableGui returnPoint;
 
-    public LootItemConfigurator(LootItem lootItem, ChestGui returnPoint) {
+    public LootItemConfigurator(LootItem lootItem, LootTableGui returnPoint) {
         super(4, "LootItem einstellen");
         this.lootItem = lootItem;
         this.max = lootItem.getAmountMax();
@@ -39,16 +42,23 @@ public class LootItemConfigurator extends ChestGui {
         setOnTopClick(e -> e.setCancelled(true));
         this.returnPoint = returnPoint;
         setOnClose((e) -> {
+            if (inputMode) return;
+            returnPoint.show(e.getPlayer());
             if (saved) {
-                returnPoint.show(e.getPlayer());
                 return;
             }
             e.getPlayer().sendMessage("§cAbgebrochen");
             Sounds.CANCEL.play(e.getPlayer());
-            returnPoint.show(e.getPlayer());
         });
         addPanes();
         update();
+    }
+
+    public void setInputMode(boolean inputMode) {
+        this.inputMode = inputMode;
+        if (inputMode) {
+            getViewers().forEach((HumanEntity::closeInventory) );
+        }
     }
 
     public void addPanes() {
@@ -69,13 +79,15 @@ public class LootItemConfigurator extends ChestGui {
     public void afterError(HumanEntity humanEntity) {
         show(humanEntity);
         Sounds.ERROR.play(humanEntity);
+        setInputMode(false);
     }
 
     public StaticPane control() {
-        if (cp == null) cp = new StaticPane(0, 0, 9, 1);
+        if (cp == null) cp = new StaticPane(0, 2, 9, 1);
         cp.clear();
         cp.addItem(new GuiItem(new ItemBuilder(Heads.BARRIER.getSkull()).setName("§cAbbrechen").build(), (e) -> e.getWhoClicked().closeInventory()), Slot.fromIndex(1));
-        cp.addItem(new GuiItem(new ItemBuilder(Heads.MINUS.getSkull()).setName("§3Minimum ändern").addLore("§7Aktuell: §3" + lootItem.getAmountMin()).build(), (e -> {
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.MINUS.getSkull()).setName("§3Minimum ändern").addLore("§7Aktuell: §3" + min).build(), (e -> {
+            setInputMode(true);
             new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§3Minimum §7eingeben", (input -> {
                 if (input == null) return;
                 try {
@@ -100,12 +112,13 @@ public class LootItemConfigurator extends ChestGui {
                     e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
                     afterError(e.getWhoClicked());
                 }
-
+                setInputMode(false);
             }));
         })), Slot.fromIndex(3));
-        cp.addItem(new GuiItem(new ItemBuilder(Heads.PLUS.getSkull()).setName("§cMaximum ändern").addLore("§7Aktuell: §c" + lootItem.getAmountMax()).build(),(e -> {
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.PLUS.getSkull()).setName("§cMaximum ändern").addLore("§7Aktuell: §c" + max).build(),(e -> {
+            setInputMode(true);
             new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§cMaximum §7eingeben", (input -> {
-                if (input == null) return;
+                if (input == null) { afterError(e.getWhoClicked()); return;}
                 try {
                     int i = Integer.parseInt(input);
                     if (i < 1) {
@@ -120,17 +133,20 @@ public class LootItemConfigurator extends ChestGui {
                     }
                     max = i;
                     control();
-                    setSaved(false);
                     update();
+                    show(e.getWhoClicked());
+                    setSaved(false);
                 } catch (NumberFormatException ex) {
                     e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
                     Sounds.ERROR.play(e.getWhoClicked());
                 }
+                setInputMode(false);
             }));
         })), Slot.fromIndex(4));
-        cp.addItem(new GuiItem(new ItemBuilder(Heads.PERCENT.getSkull()).setName("§fSpawnrate ändern").addLore("§7Aktuell: §f" + lootItem.getSpawnRate() * 100 + "%").build(),(e -> {
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.PERCENT.getSkull()).setName("§fSpawnrate ändern").addLore("§7Aktuell: §f" + spawnRate * 100 + "%").build(),(e -> {
+            setInputMode(true);
             new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§fSpawnrate §7eingeben", (input -> {
-                if (input == null) return;
+                if (input == null) { afterError(e.getWhoClicked()); return;}
                 try {
                     float i = Float.parseFloat(input);
                     if (i < 0) {
@@ -152,9 +168,10 @@ public class LootItemConfigurator extends ChestGui {
                     e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
                     afterError(e.getWhoClicked());
                 }
+                setInputMode(false);
             }));
         })), Slot.fromIndex(5));
-        cp.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").setLore(ItemHelper.getLootItemLore(lootItem)).build(), (e) -> {
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").setLore(List.of(String.format("§7Min: §d%d \n§7Max §d%d \n Spawnrate: §d%f \n", min, max, spawnRate))).build(), (e) -> {
             lootItem = new LootItem(lootItem.getID(),lootItem.getItem(), min, max, spawnRate);
             setSaved(true);
             e.getWhoClicked().sendMessage("§aGespeichert");
