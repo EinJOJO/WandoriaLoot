@@ -6,8 +6,8 @@ import org.bukkit.entity.Player;
 
 public enum Sounds {
     GUI_CLICK(Sound.ENTITY_CHICKEN_EGG),
-    GUI_PAGE_SWITCH(Sound.ITEM_BOOK_PAGE_TURN);
-
+    GUI_PAGE_SWITCH(Sound.ITEM_BOOK_PAGE_TURN),
+    CANCEL(Sound.ENTITY_ITEM_BREAK,1f,2f);
     final Sound sound;
     final float volume;
     final float pitch;

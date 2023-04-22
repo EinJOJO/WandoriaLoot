@@ -7,6 +7,8 @@ import com.github.stefvanschie.inventoryframework.pane.*;
 import com.github.stefvanschie.inventoryframework.pane.component.Label;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
 import com.github.stefvanschie.inventoryframework.pane.util.Pattern;
+import com.github.stefvanschie.inventoryframework.pane.util.Slot;
+import me.einjojo.joslibrary.util.ItemBuilder;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.util.Heads;
@@ -29,10 +31,17 @@ public class LootTablesGui extends ChestGui {
     private final PaginatedPane paginatedPane = new PaginatedPane(0,1,9,4);
     private GuiItem leftButton;
     private GuiItem rightButton;
-    private LootTable[] lootTables;
+    private final LootTable[] lootTables;
+
+
+    public LootTablesGui() {
+        this(WandoriaLoot.getInstance().getLootManager().getLootTables());
+    }
+
     public LootTablesGui(List<LootTable> lootTableList) {
         this(lootTableList.toArray(new LootTable[0]));
     }
+
 
 
     public LootTablesGui(LootTable[] lootTable) {
@@ -49,30 +58,31 @@ public class LootTablesGui extends ChestGui {
     }
 
     public void setPage(int page) {
+        try {
+            paginatedPane.setPage(page);
+        } catch (IndexOutOfBoundsException ignored) {}
         leftButton.setVisible(page != 0);
         rightButton.setVisible(page != paginatedPane.getPages() - 1);
-
-        paginatedPane.setPage(page);
         update();
     }
 
 
     private Pane navigatorPane() {
-        OutlinePane pane = new OutlinePane(3,5, 3, 1);
-        pane.setGap(1);
-        leftButton = new GuiItem(new ItemHelper(Font.WHITE.toItem('→')).setDisplayName("§6Previous Page"));
+        StaticPane pane = new StaticPane(3,5, 3, 1);
+
+        leftButton = new GuiItem(new ItemHelper(Font.WHITE.toItem('←')).setDisplayName("§6Previous Page"));
         leftButton.setAction(event -> {
             setPage(paginatedPane.getPage() - 1);
             Sounds.GUI_PAGE_SWITCH.play(event.getWhoClicked());
         });
-        pane.addItem(leftButton);
+        pane.addItem(leftButton, Slot.fromIndex(0));
 
-        rightButton = new GuiItem(new ItemHelper(Font.WHITE.toItem('←')).setDisplayName("§6Next Page"));
+        rightButton = new GuiItem(new ItemHelper(Font.WHITE.toItem('→')).setDisplayName("§6Next Page"));
         rightButton.setAction(event -> {
             setPage(paginatedPane.getPage() + 1);
             Sounds.GUI_PAGE_SWITCH.play(event.getWhoClicked());
         });
-        pane.addItem(rightButton);
+        pane.addItem(rightButton, Slot.fromIndex(2));
 
         pane.setPriority(Pane.Priority.HIGH);
         return pane;
@@ -98,18 +108,17 @@ public class LootTablesGui extends ChestGui {
                 pane = new OutlinePane(0, 0, 9, 4);
                 pane.setPriority(Pane.Priority.HIGHEST);
                 paginatedPane.addPane(paginatedPane.getPages(), pane);
-                WandoriaLoot.getInstance().debug("Adding new pane");
             }
 
             LootTable table = arrayList.get(i);
             if (table == null) continue;
-            GuiItem item = new GuiItem(ItemHelper.lootTableItem(table));
+            GuiItem item = new GuiItem(ItemHelper.lootTableItem(table).build());
             item.setAction(event -> {
                 Sounds.GUI_CLICK.play(event.getWhoClicked());
                 ItemStack itemStack = event.getCurrentItem();
                 //get the table from the item
                 try {
-                    String sUid = itemStack.getItemMeta().getPersistentDataContainer().get(NamespacedKey.fromString("wandorialoot:loot_table"), PersistentDataType.STRING);
+                    String sUid = (String) new ItemBuilder(itemStack).getPersistentData("loottable", PersistentDataType.STRING);
                     if (sUid == null) return;
                     UUID uuid = UUID.fromString(sUid);
                     LootTable table1 = WandoriaLoot.getInstance().getLootManager().getLootTable(uuid);

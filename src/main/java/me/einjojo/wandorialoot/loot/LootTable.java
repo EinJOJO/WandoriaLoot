@@ -10,7 +10,7 @@ import java.util.*;
 
 public class LootTable implements ConfigurationSerializable, Comparable<LootTable> {
     private final UUID uuid;
-    private final List<LootItem> content;
+    private List<LootItem> content;
     private final String name;
     private Rarity rarity;
 
@@ -36,9 +36,18 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
         this.rarity = rarity;
     }
 
+    public void setContent(List<LootItem> content) {
+        this.content = content;
+    }
+
     public Rarity getRarity() {
         return rarity;
     }
+
+    public void addLootItem(LootItem item) {
+        content.add(item);
+    }
+
 
     public ItemStack[] generate() {
         return null; //TODO Implement

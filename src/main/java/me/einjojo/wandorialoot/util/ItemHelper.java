@@ -1,5 +1,7 @@
 package me.einjojo.wandorialoot.util;
 
+import me.einjojo.joslibrary.util.ItemBuilder;
+import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.loot.LootItem;
 import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.loot.Rarity;
@@ -61,7 +63,7 @@ public class ItemHelper extends ItemStack {
         return this;
     }
 
-    public static ItemHelper lootTableItem(LootTable lootTable) {
+    public static ItemBuilder lootTableItem(LootTable lootTable) {
         Rarity rarity = lootTable.getRarity();
         ItemStack itemStack = switch (rarity) {
             case COMMON -> Heads.COMMON_CHEST.getSkull();
@@ -76,24 +78,8 @@ public class ItemHelper extends ItemStack {
         lore.add(ChatColor.ITALIC + (ChatColor.GRAY + "Typ: ") + color + lootTable.getRarity().name().toLowerCase());
         lore.add(ChatColor.ITALIC + (ChatColor.GRAY + "Items: ") + color + lootTable.getContent().size());
 
-        //save LootTable UUID to persistent data container
-        Objects.requireNonNull(itemStack.getItemMeta()).getPersistentDataContainer()
-                .set(NamespacedKey.fromString("wandorialoot:loot_table"), PersistentDataType.STRING, lootTable.getUuid().toString());
-
-        return new ItemHelper(itemStack).setDisplayName(color + lootTable.getName()).setLore(lore);
+        return new ItemBuilder(itemStack).setName(color + lootTable.getName()).setLore(lore)
+                .setPersistentData("loottable", lootTable.getUuid().toString(), PersistentDataType.STRING);
     }
-
-    public static ItemHelper LootItemItem(LootItem item) {
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add("§f§oID: §d" + item.getID());
-        lore.add("§f§oSpawn Chance: §d" + item.getSpawnRate() * 100 + "%");
-        lore.add("§f");
-        lore.add("§f§oMin Amount: §3" + item.getAmountMin());
-        lore.add("§f§oMax Amount: §c" + item.getAmountMax());
-        return new ItemHelper(item.getItem()).setLore(lore);
-    }
-
-
-
 
 }
