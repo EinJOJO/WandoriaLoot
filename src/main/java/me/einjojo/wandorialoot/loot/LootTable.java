@@ -65,7 +65,7 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
 
             boolean spawns = lootItem.getSpawnRate() >= 1.0f || Math.random() <= lootItem.getSpawnRate();
             if (!spawns) continue;
-            int totalItemAmount = 1 + lootItem.getAmountMin() + (int) (Math.random() * (lootItem.getAmountMax() - lootItem.getAmountMin()));
+            int totalItemAmount = lootItem.getAmountMin() + (int) (Math.random() * (lootItem.getAmountMax() - lootItem.getAmountMin()));
 
             // Start splitting the items into stacks of the max stack size
             int generatedItemAmount = 0;
@@ -73,7 +73,7 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
                 int itemAmount;
                 if (totalItemAmount > 6) {
                     int diff = totalItemAmount - generatedItemAmount;
-                    itemAmount = random.nextInt(diff) - getContent().size() / (getContent().size() + 1);
+                    itemAmount = random.nextInt(diff) + 1 - getContent().size() / (getContent().size() + 1);
                     if (itemAmount > diff) itemAmount = diff;
                 } else {
                     itemAmount = totalItemAmount;
