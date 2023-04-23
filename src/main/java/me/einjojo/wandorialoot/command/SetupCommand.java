@@ -44,7 +44,7 @@ public class SetupCommand extends AbstractCommand {
             }
         } else if (strings[0].equalsIgnoreCase("loot")) {
             //LootTables
-            if (strings.length < 2) return syntaxOverwrite("/setup loot <create|edit|delete>");
+            if (strings.length < 2) return syntaxOverwrite("/setup loot <create|edit|delete|show>");
 
             boolean hasThree = strings.length >= 3;
             StringBuilder lootTableName = new StringBuilder();
@@ -64,6 +64,7 @@ public class SetupCommand extends AbstractCommand {
                     LootTable table = new LootTable(lootTableName.toString());
                     plugin.getLootManager().addLootTable(table);
                     player.sendMessage("§aLoot table created");
+                    new LootTableGui(table).show(player);
                     return CommandResult.OK;
 
                 case "edit":
@@ -81,6 +82,22 @@ public class SetupCommand extends AbstractCommand {
                     }
                     break;
                 case "delete":
+                    if (!hasThree) {
+                        LootTablesSelectorGui gui = new LootTablesSelectorGui((lc -> {
+                            if (lc == null) {return;}
+                            plugin.getLootManager().removeLootTable(lc);
+                            player.sendMessage("§aLoot table deleted");
+                        }));
+                        gui.show(player);
+                    } else {
+                        LootTable lootTable = plugin.getLootManager().getLootTable(lootTableName.toString());
+                        if (lootTable == null) {
+                            player.sendMessage("§cLoot table not found");
+                            return CommandResult.FAILED;
+                        }
+                        plugin.getLootManager().removeLootTable(lootTable);
+                        player.sendMessage("§aLoot table deleted");
+                    }
                     break;
                 case "show":
                     new LootTablesGui(plugin.getLootManager().getLootTables()).show(player);

@@ -7,6 +7,6 @@ commands:
   setup:
     aliases:
       - wandorialootsetup
+      - lc
+      - lootchest
     description: setup
-  test:
-    description: test

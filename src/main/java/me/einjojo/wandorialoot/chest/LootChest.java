@@ -209,10 +209,7 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
             Location location1 = Location.deserialize((Map<String, Object>) map.get("location"));
             UUID chestUUID = UUID.fromString((String) map.get("uuid"));
 
-            UUID lootTableUUID = null;
-            if (map.get("lootTable") != null && map.get("lootTable").equals("null")) {
-                lootTableUUID = UUID.fromString((String) map.get("lootTable"));
-            }
+            UUID lootTableUUID = UUID.fromString((String) map.getOrDefault("lootTable", null));
             ItemStack[] content;
             if (contentList == null || contentList.isEmpty()) {
                 content = null;
@@ -247,6 +244,13 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
         ItemStack[] generatedItems = lootTable.generate();
         for (ItemStack generatedItem : generatedItems) {
             int slot = random.nextInt(27);
+            int tries = 0;
+            while (inventory.getItem(slot) != null) {
+                if (tries++ > 27) {
+                    return inventory; //No empty slot found
+                };
+                slot = (slot+1)%27;
+            }
             inventory.setItem(slot, generatedItem);
         }
 

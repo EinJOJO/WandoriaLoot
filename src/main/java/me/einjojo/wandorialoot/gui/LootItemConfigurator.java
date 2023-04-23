@@ -23,14 +23,13 @@ import java.util.List;
 
 public class LootItemConfigurator extends ChestGui {
 
-    private LootItem lootItem;
+    private final LootItem lootItem;
     private boolean inputMode;
     private int max;
     private int min;
     private float spawnRate;
     StaticPane cp;
     private boolean saved;
-    private final LootTableGui returnPoint;
 
     public LootItemConfigurator(LootItem lootItem, LootTableGui returnPoint) {
         super(4, "LootItem einstellen");
@@ -40,7 +39,6 @@ public class LootItemConfigurator extends ChestGui {
         this.spawnRate = lootItem.getSpawnRate();
         setSaved(true);
         setOnTopClick(e -> e.setCancelled(true));
-        this.returnPoint = returnPoint;
         setOnClose((e) -> {
             if (inputMode) return;
             returnPoint.returnToView(e.getPlayer());
@@ -57,7 +55,7 @@ public class LootItemConfigurator extends ChestGui {
     public void setInputMode(boolean inputMode) {
         this.inputMode = inputMode;
         if (inputMode) {
-            getViewers().forEach((HumanEntity::closeInventory) );
+            getViewers().forEach((HumanEntity::closeInventory));
         }
     }
 
@@ -93,14 +91,10 @@ public class LootItemConfigurator extends ChestGui {
                 try {
                     int i = Integer.parseInt(input);
                     if (i < 1) {
-                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als 0 sein");
-                        afterError(e.getWhoClicked());
-                        return;
+                        throw new IllegalArgumentException("§cDie Zahl muss größer als 0 sein");
                     }
-                    if (min > max) {
-                        e.getWhoClicked().sendMessage("§cDie Zahl muss kleiner als das Maximum sein");
-                        afterError(e.getWhoClicked());
-                        return;
+                    if (i > max) {
+                        max = min;
                     }
 
                     min = i;
@@ -111,25 +105,27 @@ public class LootItemConfigurator extends ChestGui {
                 } catch (NumberFormatException ex) {
                     e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
                     afterError(e.getWhoClicked());
+                } catch (Exception ex) {
+                    e.getWhoClicked().sendMessage(ex.getMessage());
+                    afterError(e.getWhoClicked());
                 }
                 setInputMode(false);
             }));
         })), Slot.fromIndex(3));
-        cp.addItem(new GuiItem(new ItemBuilder(Heads.PLUS.getSkull()).setName("§cMaximum ändern").addLore("§7Aktuell: §c" + max).build(),(e -> {
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.PLUS.getSkull()).setName("§cMaximum ändern").addLore("§7Aktuell: §c" + max).build(), (e -> {
             setInputMode(true);
             new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§cMaximum §7eingeben", (input -> {
-                if (input == null) { afterError(e.getWhoClicked()); return;}
+                if (input == null) {
+                    afterError(e.getWhoClicked());
+                    return;
+                }
                 try {
                     int i = Integer.parseInt(input);
                     if (i < 1) {
-                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als 0 sein");
-                        afterError(e.getWhoClicked());
-                        return;
+                        throw new IllegalArgumentException("§cDie Zahl muss größer als 0 sein");
                     }
-                    if (min>i) {
-                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als das Minimum sein");
-                        afterError(e.getWhoClicked());
-                        return;
+                    if (i < min) {
+                        throw new IllegalArgumentException("§cDie Zahl muss größer als das Minimum sein");
                     }
                     max = i;
                     control();
@@ -138,28 +134,30 @@ public class LootItemConfigurator extends ChestGui {
                     setSaved(false);
                 } catch (NumberFormatException ex) {
                     e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
-                    Sounds.ERROR.play(e.getWhoClicked());
+                    afterError(e.getWhoClicked());
+                } catch (IllegalArgumentException ex) {
+                    e.getWhoClicked().sendMessage(ex.getMessage());
+                    afterError(e.getWhoClicked());
                 }
                 setInputMode(false);
             }));
         })), Slot.fromIndex(4));
-        cp.addItem(new GuiItem(new ItemBuilder(Heads.PERCENT.getSkull()).setName("§fSpawnrate ändern").addLore("§7Aktuell: §f" + spawnRate * 100 + "%").build(),(e -> {
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.PERCENT.getSkull()).setName("§fSpawnrate ändern").addLore("§7Aktuell: §f" + spawnRate * 100 + "%").build(), (e -> {
             setInputMode(true);
             new PlayerChatInput(WandoriaLoot.getInstance(), (Player) e.getWhoClicked(), "§fSpawnrate §7eingeben", (input -> {
-                if (input == null) { afterError(e.getWhoClicked()); return;}
+                if (input == null) {
+                    afterError(e.getWhoClicked());
+                    return;
+                }
                 try {
                     float i = Float.parseFloat(input);
                     if (i < 0) {
-                        e.getWhoClicked().sendMessage("§cDie Zahl muss größer als 0 sein");
-                        afterError(e.getWhoClicked());
-                        return;
+                        throw new IllegalArgumentException("§cDie Zahl muss größer als 0 sein");
                     }
                     if (i > 100) {
-                        e.getWhoClicked().sendMessage("§cDie Zahl muss kleiner als 100 sein");
-                        afterError(e.getWhoClicked());
-                        return;
+                        throw new IllegalArgumentException("§cDie Zahl muss kleiner als 100 sein");
                     }
-                    spawnRate = i / 100;
+                    spawnRate = i / 100f;
                     show(e.getWhoClicked());
                     control();
                     setSaved(false);
@@ -167,11 +165,18 @@ public class LootItemConfigurator extends ChestGui {
                 } catch (NumberFormatException ex) {
                     e.getWhoClicked().sendMessage("§cBitte gebe eine Zahl ein");
                     afterError(e.getWhoClicked());
+                } catch (IllegalArgumentException ex) {
+                    e.getWhoClicked().sendMessage(ex.getMessage());
+                    afterError(e.getWhoClicked());
                 }
                 setInputMode(false);
             }));
         })), Slot.fromIndex(5));
-        cp.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").setLore(List.of(String.format("§7Min: §d%d \n§7Max §d%d \n Spawnrate: §d%f \n", min, max, spawnRate))).build(), (e) -> {
+        cp.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").setLore(List.of(
+                String.format("§7Min: §d%d", min),
+                String.format("§7Max: §d%d", max),
+                String.format("Spawnrate: §d%f", spawnRate)
+        )).build(), (e) -> {
             lootItem.setAmountMax(max);
             lootItem.setAmountMin(min);
             lootItem.setSpawnRate(spawnRate);

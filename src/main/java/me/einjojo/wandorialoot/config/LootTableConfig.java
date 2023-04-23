@@ -26,11 +26,13 @@ public class LootTableConfig extends ConfigurationFile {
 
     public List<LootTable> readConfig() {
         List<Map<String, Object>> serialized = (List<Map<String, Object>>) getFile().getList("loottables");
-        return serialized == null ? Collections.emptyList() :
+        List<LootTable> table =  serialized == null ? Collections.emptyList() :
                 serialized.stream()
                         .map(LootTable::deserialize)
                         .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .toList();
+        plugin.info("Loaded " + table.size() + " LootTables");
+        return table;
     }
 
 }

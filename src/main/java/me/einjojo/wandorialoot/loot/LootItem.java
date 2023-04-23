@@ -5,6 +5,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +61,15 @@ public class LootItem implements ConfigurationSerializable {
 
     public void setSpawnRate(float spawnRate) {
         this.spawnRate = spawnRate;
+    }
+
+    public static Comparator<LootItem> getSpawnRateComparator() {
+        return new Comparator<LootItem>(){
+            @Override
+            public int compare(LootItem o1, LootItem o2) {
+                return Float.compare(o1.getSpawnRate(), o2.getSpawnRate());
+            }
+        };
     }
 
     public ItemStack getItem() {

@@ -26,8 +26,9 @@ public final class WandoriaLoot extends JoPlugin {
         );
         registerCommands(new SetupCommand(this));
 
-        lootChestManager.loadConfig();
         lootManager.loadLootTables();
+        lootChestManager.loadConfig();
+
     }
 
     @Override
@@ -63,4 +64,5 @@ public final class WandoriaLoot extends JoPlugin {
     public LootChestManager getLootChestManager() {
         return lootChestManager;
     }
+
 }

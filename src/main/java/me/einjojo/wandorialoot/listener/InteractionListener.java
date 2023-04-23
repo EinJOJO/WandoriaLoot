@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class InteractionListener implements Listener, PacketListener {
+public class InteractionListener implements PacketListener {
 
     private final WandoriaLoot plugin;
     public InteractionListener(WandoriaLoot plugin) {
@@ -25,43 +25,37 @@ public class InteractionListener implements Listener, PacketListener {
     }
 
 
-    /**
-     * Setup of the chest
-     */
-    @EventHandler
-    public void setupChest(PlayerInteractEvent e) {
-        if (e.getClickedBlock() == null) return;
-        if (!(SetupCommand.setUpPlayer.contains(e.getPlayer().getUniqueId()))) return;
-        e.setCancelled(true);
-        Block block = e.getClickedBlock();
-        block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, block.getType());
-        block.setType(Material.AIR);
-        //Create lootChest
-        LootChest lootChest = new LootChest(block.getLocation());
+
+
+    public void setupChest(Location location) {
+        LootChest lootChest = new LootChest(location);
         plugin.getLootChestManager().addChest(lootChest);
 
         // Send BlockChange Packet to all players that see the chunk
-        Chunk chunk = block.getChunk();
-        int chunkX = chunk.getX();
-        int chunkZ = chunk.getZ();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getWorld() == block.getWorld()) {
-                int viewDistance = player.getClientViewDistance();
-                int playerChunkX = player.getLocation().getBlockX() >> 4;
-                int playerChunkZ = player.getLocation().getBlockZ() >> 4;
-                if (Math.abs(chunkX - playerChunkX) <= viewDistance && Math.abs(chunkZ - playerChunkZ) <= viewDistance) {
-                    lootChest.renderChest(player); // Sends BlockChange Packet
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                location.getBlock().setType(Material.AIR);
+                Chunk chunk = location.getChunk();
+                int chunkX = chunk.getX();
+                int chunkZ = chunk.getZ();
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    if (player.getWorld() == location.getWorld()) {
+                        int viewDistance = player.getClientViewDistance();
+                        int playerChunkX = player.getLocation().getBlockX() >> 4;
+                        int playerChunkZ = player.getLocation().getBlockZ() >> 4;
+                        if (Math.abs(chunkX - playerChunkX) <= viewDistance && Math.abs(chunkZ - playerChunkZ) <= viewDistance) {
+                            lootChest.renderChest(player); // Sends BlockChange Packet
+                        }
+                    }
                 }
             }
-        }
-
+        }.runTask(plugin);
     }
 
 
     @Override
-    public void onPacketSending(PacketEvent event) {
-
-    }
+    public void onPacketSending(PacketEvent event) {}
 
     @Override
     public void onPacketReceiving(PacketEvent e) {
@@ -81,11 +75,15 @@ public class InteractionListener implements Listener, PacketListener {
         }
         if (e.getPacketType() == PacketType.Play.Client.BLOCK_DIG) {
             if (!(SetupCommand.setUpPlayer.contains(e.getPlayer().getUniqueId()))) return;
-            //TODO: Do something when the block gets destroyed
-            // Maybe delete the chest from the list
-
-            }
-
+            Location location = e.getPacket().getBlockPositionModifier().read(0).toLocation(e.getPlayer().getWorld());
+            LootChest lootChest = plugin.getLootChestManager().getLootChest(location);
+            if (lootChest == null) {
+                setupChest(location);
+            } else {
+                plugin.getLootChestManager().removeChest(lootChest);
+                e.getPlayer().sendMessage("Removed LootChest");
+            };
+        }
     }
 
     @Override

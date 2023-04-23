@@ -39,6 +39,7 @@ public class LootChestManager {
         lootChest.openInventory(player);
     }
 
+    //TODO: Call this method inside a close listener
     public void closeLootChest(LootChest lootChest, Player player) {
         lootChest.closeChest(player);
         lootChest.destroyChest(player);
@@ -77,6 +78,14 @@ public class LootChestManager {
         }
         lootChestConfig.saveConfig(allChests);
         playersConfig.saveConfig(playerChestMap);
+    }
+
+
+    public void removeChest(LootChest lootChest) {
+        String chunk = parseChunk(lootChest.getLocation().getChunk());
+        chunkChestMap.get(chunk).remove(lootChest);
+        playerChestMap.values().forEach(set -> set.remove(lootChest));
+        plugin.debug(String.format("Removed LootChest %s", lootChest));
     }
 
 

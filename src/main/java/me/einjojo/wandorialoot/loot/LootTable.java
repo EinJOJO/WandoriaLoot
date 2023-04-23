@@ -32,6 +32,8 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
         this.name = name;
     }
 
+
+
     public String getName() {
         return name;
     }
@@ -56,12 +58,14 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
     public ItemStack[] generate() {
         ArrayList<ItemStack> items = new ArrayList<>();
         Random random = new Random();
-        for (LootItem lootItem: getContent()) {
+        List<LootItem> lootItems = new ArrayList<>(getContent());
+        lootItems.sort(LootItem.getSpawnRateComparator());
+        for (LootItem lootItem: lootItems) {
             if (items.size() >= 27) break; // 27 is the max amount of items that can be in a chest (3 rows of 9 slots
 
-            boolean spawns = lootItem.getSpawnRate() == 1f || Math.random() <= lootItem.getSpawnRate();
+            boolean spawns = lootItem.getSpawnRate() >= 1.0f || Math.random() <= lootItem.getSpawnRate();
             if (!spawns) continue;
-            int totalItemAmount = lootItem.getAmountMin() + (int) (Math.random() * (lootItem.getAmountMax() - lootItem.getAmountMin()));
+            int totalItemAmount = 1 + lootItem.getAmountMin() + (int) (Math.random() * (lootItem.getAmountMax() - lootItem.getAmountMin()));
 
             // Start splitting the items into stacks of the max stack size
             int generatedItemAmount = 0;
