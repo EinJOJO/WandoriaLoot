@@ -20,6 +20,8 @@ public class TestGeneration extends ChestGui {
     public StaticPane createPane(ItemStack[] content) {
         StaticPane pane = new StaticPane(0, 0, 9, 3);
         for (int i = 0; i < content.length; i++) {
+            if (content[i] == null) continue;
+
             pane.addItem(new GuiItem(content[i]), Slot.fromIndex(i));
         }
         return pane;
