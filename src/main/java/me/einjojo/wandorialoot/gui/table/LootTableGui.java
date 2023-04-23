@@ -38,6 +38,7 @@ public class LootTableGui extends ChestGui {
     private OutlinePane contentPane;
     String newName;
     boolean inputMode = false;
+
     public LootTableGui(LootTable lootTable) {
         super(6, "Lade...");
         this.baseTitle = "Loot Table " + lootTable.getRarity().getColor() + lootTable.getName();
@@ -96,7 +97,6 @@ public class LootTableGui extends ChestGui {
     }
 
 
-
     public void returnToView(HumanEntity p) {
         show(p);
         editsItem = false;
@@ -109,13 +109,14 @@ public class LootTableGui extends ChestGui {
 
 
     private StaticPane buttons() {
-        if (lootChestRaritySelector == null) lootChestRaritySelector = new GuiItem(ItemHelper.lootTableItem(lootTable).build(), (e -> {
-            lootTable.setRarity(Rarity.values()[(lootTable.getRarity().ordinal() + 1) % Rarity.values().length]);
-            Sounds.GUI_CLICK.play(e.getWhoClicked());
-            lootChestRaritySelector.setItem(ItemHelper.lootTableItem(lootTable).build());
-            update();
-        }) );
-        StaticPane staticPane = new StaticPane(0,0,1,6);
+        if (lootChestRaritySelector == null)
+            lootChestRaritySelector = new GuiItem(ItemHelper.lootTableItem(lootTable).build(), (e -> {
+                lootTable.setRarity(Rarity.values()[(lootTable.getRarity().ordinal() + 1) % Rarity.values().length]);
+                Sounds.GUI_CLICK.play(e.getWhoClicked());
+                lootChestRaritySelector.setItem(ItemHelper.lootTableItem(lootTable).build());
+                update();
+            }));
+        StaticPane staticPane = new StaticPane(0, 0, 1, 6);
         staticPane.addItem(lootChestRaritySelector, Slot.fromIndex(0));
         staticPane.addItem(new GuiItem(new ItemBuilder(Material.NAME_TAG).setName("§eUmbenennen").build(), (e) -> {
             setInputMode(true);
@@ -125,12 +126,13 @@ public class LootTableGui extends ChestGui {
                 if (input == null) {
                     Sounds.CANCEL.play(e.getWhoClicked());
                     return;
-                };
+                }
+                ;
                 newName = input;
             }));
         }), Slot.fromIndex(1));
-        staticPane.addItem(new GuiItem(new ItemBuilder(Heads.BARRIER.getSkull()).setName("§cAbbrechen").build(),e -> e.getWhoClicked().closeInventory()), Slot.fromIndex(4));
-        staticPane.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").build(),(e) -> {
+        staticPane.addItem(new GuiItem(new ItemBuilder(Heads.BARRIER.getSkull()).setName("§cAbbrechen").build(), e -> e.getWhoClicked().closeInventory()), Slot.fromIndex(4));
+        staticPane.addItem(new GuiItem(new ItemBuilder(Heads.GREEN_CHECK.getSkull()).setName("§aSpeichern").build(), (e) -> {
             lootTable.setContent(lootItemsList.values().stream().toList());
             lootTable.setName(newName);
             setSaved(true);
@@ -156,7 +158,7 @@ public class LootTableGui extends ChestGui {
                 new LootItemConfigurator(lootItemsList.get(lootID), this).show(e.getWhoClicked());
                 return;
             }
-            if(e.isRightClick()) {
+            if (e.isRightClick()) {
                 lootItemsList.remove(lootID);
                 loadContentPane();
                 update();

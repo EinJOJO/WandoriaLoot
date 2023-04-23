@@ -2,24 +2,30 @@ package me.einjojo.wandorialoot.gui.table;
 
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.loot.LootTable;
+import org.bukkit.event.inventory.InventoryClickEvent;
 
 public class LootTablesSelectorGui extends LootTablesGui {
 
-    private SelectionResult handler;
-    public LootTablesSelectorGui() {
+
+    private final SelectionResult handler;
+
+    public LootTablesSelectorGui(SelectionResult handler) {
         super(WandoriaLoot.getInstance().getLootManager().getLootTables().toArray(new LootTable[0]));
-        setTitle("Select LootTable");
+        this.handler = handler;
+        setTitle("§aWähle LootTable aus");
+        setOnClose(e -> handler.onSelect(null));
     }
 
-
-
-
-    public void setOnSelection(SelectionResult method) {
-        handler = method;
+    @Override
+    public void onChestSelect(InventoryClickEvent e) {
+        LootTable lootTable = getLootChest(e.getCurrentItem());
+        if (lootTable == null) return;
+        e.getWhoClicked().closeInventory();
+        handler.onSelect(lootTable);
     }
 
     @FunctionalInterface
-    protected interface SelectionResult {
+    public interface SelectionResult {
         void onSelect(LootTable lootTable);
     }
 }

@@ -4,6 +4,7 @@ import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.command.SetupCommand;
 import me.einjojo.wandorialoot.config.LootChestConfig;
 import me.einjojo.wandorialoot.config.PlayersConfig;
+import me.einjojo.wandorialoot.gui.LootChestConfiguratorGui;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -27,6 +28,12 @@ public class LootChestManager {
     }
 
     public void openLootChest(LootChest lootChest, Player player) {
+        if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
+            LootChestConfiguratorGui gui = new LootChestConfiguratorGui(lootChest);
+
+            gui.show(player);
+            return;
+        }
         if (isChestDiscovered(player, lootChest)) return;
         lootChest.openChest(player);
         lootChest.openInventory(player);

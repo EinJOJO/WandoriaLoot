@@ -5,14 +5,21 @@ import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
+import me.einjojo.joslibrary.util.ItemBuilder;
 import me.einjojo.wandorialoot.WandoriaLoot;
 import me.einjojo.wandorialoot.chest.LootChest;
+import me.einjojo.wandorialoot.gui.table.LootTablesGui;
 import me.einjojo.wandorialoot.gui.table.LootTablesSelectorGui;
 import me.einjojo.wandorialoot.loot.LootTable;
 import me.einjojo.wandorialoot.util.Heads;
 ;
+import me.einjojo.wandorialoot.util.ItemHelper;
+import me.einjojo.wandorialoot.util.Sounds;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -51,52 +58,72 @@ public class LootChestConfiguratorGui extends ChestGui {
         OutlinePane pane = new OutlinePane(2, 2, 5, 1);
         pane.setGap(1);
 
-        pane.addItem(getLootChestInfoItem());
         pane.addItem(getLootTableSelectorItem());
+        pane.addItem(getLootChestInfoItem());
+        pane.addItem(getTestGenerationItem());
+
 
         return pane;
     }
 
+    private GuiItem getTestGenerationItem() {
+        ItemStack stack = new ItemBuilder(Material.BLAZE_ROD).setName("§eTestgenerierung").setLore(List.of("§7Generiere eine Testkiste")).build();
+        return new GuiItem(stack, (e -> {
+            Inventory inventory1 = lootChest.getInventory();
+            new TestGeneration(this, inventory1.getContents()).show(e.getWhoClicked());
+        }));
+    }
+
     private GuiItem getLootTableSelectorItem() {
-        ItemStack selector = Heads.WHITE_I.getSkull();
-        UUID tableUUID = lootChest.getLootTableUUID();
-        LootTable table = tableUUID == null ? null : plugin.getLootManager().getLootTable(tableUUID);
-        ItemMeta selectorMeta = selector.getItemMeta();
-        if (selectorMeta == null) {
-            selectorMeta = Bukkit.getItemFactory().getItemMeta(Material.PLAYER_HEAD);
-        };
+        LootTable table = WandoriaLoot.getInstance().getLootManager().getLootTable(lootChest.getLootTableUUID());
         ArrayList<String> arrayList = new ArrayList();
         arrayList.add("§7Verwalte die Lootchests");
         arrayList.add("§6Linksklick §ezum Setzen");
+
+        ItemBuilder selector;
         if (table != null) {
+             selector = ItemHelper.lootTableItem(table);
             arrayList.add("§eAktueller LootTable: §6" + table.getName());
             arrayList.add("§4Rechtsklick §czum Entfernen");
+        } else {
+            selector = new ItemBuilder(Material.BARRIER);
         }
-        selectorMeta.setLore(arrayList);
-
-        selector.setItemMeta(selectorMeta);
-        GuiItem item =  new GuiItem(selector);
+        selector.setName("§eLootTable auswählen");
+        selector.setLore(arrayList);
+        final GuiItem item =  new GuiItem(selector.build());
         item.setAction(e -> {
             if (e.isRightClick()) {
-
                 //Entfernen des LootTables
                 lootChest.setLootTable(null);
+                item.setItem(getLootTableSelectorItem().getItem());
+                update();
                 e.getWhoClicked().sendMessage("§aLootTable entfernt");
             } else if (e.isLeftClick()) {
-
+                final HumanEntity player = e.getWhoClicked();
+                LootTablesSelectorGui gui = new LootTablesSelectorGui(lootTable -> {
+                    if (lootTable == null) {
+                        Sounds.CANCEL.play(player);
+                        update();
+                        show(player);
+                        return;
+                    }
+                    lootChest.setLootTable(lootTable);
+                    player.sendMessage("§aLootTable gesetzt");
+                    item.setItem(getLootTableSelectorItem().getItem());
+                    Sounds.GUI_CLICK.play(player);
+                });
+                gui.show(player);
             }
         });
         return item;
     }
 
     private GuiItem getLootChestInfoItem() {
-        ItemStack info = Heads.WHITE_I.getSkull();
-        ItemMeta infoMeta = info.getItemMeta();
-        infoMeta.setLore(List.of(
-                String.format("§eGeöffnet von §6%d §eSpielern", 0), //TODO: Get player count
-                String.format("§eAktueller Modus: %s", "§cLootTable")
-        ));
-        info.setItemMeta(infoMeta);
-        return new GuiItem(info);
+        return new GuiItem(new ItemBuilder(Heads.WHITE_I.getSkull()).setLore(List.of(
+                // String information about lootchest
+                String.format("§eLootChest: §6%s", lootChest.getUuid()),
+                String.format("§eLootTable: §6%s", lootChest.getLootTableUUID()),
+                String.format("§ePosition: §6%s", lootChest.getLocation().toString())
+        )).setName("Informationen").build());
     }
 }

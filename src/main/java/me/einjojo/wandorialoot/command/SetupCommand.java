@@ -19,6 +19,7 @@ public class SetupCommand extends AbstractCommand {
     public static Set<UUID> setUpPlayer = new HashSet<>();
     private String syntaxOverwrite = "";
     private final WandoriaLoot plugin;
+
     public SetupCommand(WandoriaLoot plugin) {
         super("setup");
         this.plugin = plugin;
@@ -52,11 +53,14 @@ public class SetupCommand extends AbstractCommand {
             }
             switch (strings[1].toLowerCase()) {
                 case "create":
-                    if (!hasThree) {return syntaxOverwrite("/setup loot create <name>");}
+                    if (!hasThree) {
+                        return syntaxOverwrite("/setup loot create <name>");
+                    }
                     if (plugin.getLootManager().getLootTable(lootTableName.toString()) != null) {
                         player.sendMessage("§cLoot table already exists");
                         return CommandResult.FAILED;
-                    };
+                    }
+                    ;
                     LootTable table = new LootTable(lootTableName.toString());
                     plugin.getLootManager().addLootTable(table);
                     player.sendMessage("§aLoot table created");

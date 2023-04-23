@@ -13,18 +13,22 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+
 /**
  * Represents a loot chest.
  */
-public class LootChest implements ConfigurationSerializable {
+public class LootChest implements ConfigurationSerializable, InventoryHolder {
 
     private final Map<UUID, BukkitTask> playerChestRemoveTasks = new HashMap<>();
+    private final Map<UUID, Inventory> playerInventories = new HashMap<>();
     private final UUID uuid;
     private final Location location;
     private UUID lootTableUUID;
@@ -33,6 +37,7 @@ public class LootChest implements ConfigurationSerializable {
 
     /**
      * Creates a new loot chest instance for the given location.
+     *
      * @param location location of the loot chest
      */
     public LootChest(Location location) {
@@ -41,9 +46,10 @@ public class LootChest implements ConfigurationSerializable {
 
     /**
      * Creates a new loot chest instance for the given location.
-     * @param uuid uuid of the loot chest
-     * @param location location of the loot chest
-     * @param content content of the loot chest
+     *
+     * @param uuid      uuid of the loot chest
+     * @param location  location of the loot chest
+     * @param content   content of the loot chest
      * @param lootTable loot table of the loot chest
      */
     public LootChest(UUID uuid, Location location, @Nullable ItemStack[] content, @Nullable UUID lootTable) {
@@ -88,7 +94,7 @@ public class LootChest implements ConfigurationSerializable {
 
     /**
      * @param player Player that receive the close packet
-     * //TODO: Fix chest close packet
+     *               //TODO: Fix chest close packet
      */
     public void closeChest(Player player) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BLOCK_ACTION);
@@ -96,44 +102,29 @@ public class LootChest implements ConfigurationSerializable {
         //Close chest
         packet.getIntegers().write(0, 0);
         packet.getIntegers().write(1, 0);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), ()-> {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(WandoriaLoot.getInstance(), () -> {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
             player.playSound(location, Sound.BLOCK_CHEST_CLOSE, 1, 1);
         }, 5);
     }
 
     public void openInventory(Player player) {
-        /**
-         * View view = playerViews.get(player.getUniqueId());
-         *         if (view instanceof LootChestConfigurationView) {
-         *             destroyInventory(player); // Destroy old view, to prevent opening Config-View twice
-         *             view = null;
-         *         }
-         *         if(view == null) { // Create new View if player has no View
-         *             if (SetupCommand.setUpPlayer.contains(player.getUniqueId())) {
-         *                 view = new LootChestConfigurationView( this, player);
-         *             } else {
-         *                 view = new LootChestLootView(this, player);
-         *             }
-         *             playerViews.put(player.getUniqueId(), view);
-         *         }
-         *         view.open(player);
-         */
+        if (playerInventories.containsKey(player.getUniqueId())) {
+            player.openInventory(playerInventories.get(player.getUniqueId()));
+        } else {
+            Inventory inventory = getInventory();
+            playerInventories.put(player.getUniqueId(), inventory);
+            player.openInventory(inventory);
+        }
     }
 
     public void destroyInventory(Player player) {
-        /* View view = playerViews.get(player.getUniqueId());
-        if(view == null) {
-            return;
-        }
-        view.unregister();
-        playerViews.remove(player.getUniqueId());
-
-         */
+        playerInventories.remove(player.getUniqueId());
     }
 
     /**
      * Unrenders the chest and destroys the inventory for the given player after 5 seconds.
+     *
      * @param player Packet receiver
      */
     protected void destroyChest(Player player) {
@@ -162,6 +153,7 @@ public class LootChest implements ConfigurationSerializable {
 
     /**
      * Opens the chest by packet.
+     *
      * @param player Receiver
      */
     protected void openChest(Player player) {
@@ -179,6 +171,7 @@ public class LootChest implements ConfigurationSerializable {
 
     /**
      * Renders the chest for the given player.
+     *
      * @param player Packet receiver
      */
     public void renderChest(Player player) {
@@ -209,7 +202,7 @@ public class LootChest implements ConfigurationSerializable {
 
     public static LootChest deserialize(Map<String, Object> map) {
         try {
-            List<Map<String,Object>> contentList = (List<Map<String,Object>>) map.get("content");
+            List<Map<String, Object>> contentList = (List<Map<String, Object>>) map.get("content");
             Location location1 = Location.deserialize((Map<String, Object>) map.get("location"));
             UUID chestUUID = UUID.fromString((String) map.get("uuid"));
 
@@ -239,5 +232,23 @@ public class LootChest implements ConfigurationSerializable {
     public String toString() {
         return String.format("LootChest: { x:%.2f, y:%.2f, z:%.2f | UUID: %s }", location.getX(), location.getY(),
                 location.getZ(), uuid.toString());
+    }
+
+    @NotNull
+    @Override
+    public Inventory getInventory() {
+        Inventory inventory = Bukkit.createInventory(this, 27, "LootChest");
+        Random random = new Random();
+        LootTable lootTable = getLootTable();
+        if (lootTable == null) {
+            return inventory;
+        }
+        ItemStack[] generatedItems = lootTable.generate();
+        for (ItemStack generatedItem : generatedItems) {
+            int slot = random.nextInt(27);
+            inventory.setItem(slot, generatedItem);
+        }
+
+        return inventory;
     }
 }

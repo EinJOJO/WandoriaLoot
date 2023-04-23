@@ -54,7 +54,16 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
 
 
     public ItemStack[] generate() {
-        return null; //TODO Implement
+        ArrayList<ItemStack> items = new ArrayList<>();
+        for (LootItem lootItem: getContent()) {
+            boolean spawns = Math.random() <= lootItem.getSpawnRate();
+            if (!spawns) continue;
+            int itemAmount = lootItem.getAmountMin() + (int) (Math.random() * (lootItem.getAmountMax() - lootItem.getAmountMin()));
+            ItemStack item = lootItem.getItem().clone();
+            item.setAmount(itemAmount);
+            items.add(item);
+        }
+        return items.toArray(new ItemStack[0]);
     }
 
     public List<LootItem> getContent() {
@@ -89,7 +98,7 @@ public class LootTable implements ConfigurationSerializable, Comparable<LootTabl
             Rarity rarity = Rarity.valueOf(map.get("rarity").toString());
             ArrayList<LootItem> deserializedLootItems = new ArrayList<>();
             List<Map<String, Object>> serializedLootItems = (List<Map<String, Object>>) map.get("content");
-            for (Map<String, Object> entry: serializedLootItems) {
+            for (Map<String, Object> entry : serializedLootItems) {
                 LootItem lootItem = LootItem.deserialize(entry);
                 if (lootItem != null) {
                     deserializedLootItems.add(lootItem);

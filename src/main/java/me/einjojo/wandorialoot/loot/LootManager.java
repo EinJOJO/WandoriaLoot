@@ -16,7 +16,7 @@ public class LootManager {
     private final LootTableConfig lootTableConfig;
     private final WandoriaLoot plugin;
 
-    public LootManager(WandoriaLoot plugin){
+    public LootManager(WandoriaLoot plugin) {
         this.lootTableConfig = new LootTableConfig(plugin);
         this.plugin = plugin;
     }
@@ -25,17 +25,20 @@ public class LootManager {
         lootTables.clear();
         lootTables.putAll(lootTableConfig.readConfig().stream().collect(HashMap::new, (map, lootTable) -> map.put(lootTable.getUuid(), lootTable), HashMap::putAll));
     }
+
     public void saveLootTables() {
         lootTableConfig.writeConfig(lootTables.values().stream().toList());
     }
 
     /**
      * Get a loot table by its UUID
+     *
      * @param uuid The UUID of the loot table
      * @return The loot table or null if it doesn't exist
      */
     @Nullable
     public LootTable getLootTable(UUID uuid) {
+        if (uuid == null) return null;
         return lootTables.get(uuid);
     }
 
@@ -47,6 +50,7 @@ public class LootManager {
 
     /**
      * Add a loot table to the manager
+     *
      * @param lootTable The loot table to add
      */
     public void addLootTable(LootTable lootTable) {
@@ -57,6 +61,7 @@ public class LootManager {
 
     /**
      * Remove a loot table from the manager
+     *
      * @param lootTable
      */
     public void removeLootTable(LootTable lootTable) {
@@ -66,6 +71,7 @@ public class LootManager {
 
     /**
      * Remove a loot table from the manager
+     *
      * @param uuid
      */
     public void removeLootTable(UUID uuid) {

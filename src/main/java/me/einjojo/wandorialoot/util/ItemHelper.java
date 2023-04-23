@@ -72,6 +72,7 @@ public class ItemHelper extends ItemStack {
             case RARE -> Heads.RARE_CHEST.getSkull();
             case MYTHIC -> Heads.MYTHIC_CHEST.getSkull();
             case LEGENDARY -> Heads.LEGENDARY_CHEST.getSkull();
+
         };
         ArrayList<String> lore = new ArrayList<>();
         ChatColor color = rarity.getColor();

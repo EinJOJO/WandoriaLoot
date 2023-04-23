@@ -26,7 +26,7 @@ public class LootItem implements ConfigurationSerializable {
     }
 
     public LootItem(int id, ItemStack itemStack, int amountMin, int amountMax, float spawnRate) {
-        this.id= id;
+        this.id = id;
         this.item = itemStack;
         this.amountMax = amountMax;
         this.amountMin = amountMin;
@@ -55,6 +55,7 @@ public class LootItem implements ConfigurationSerializable {
 
     public void setAmountMin(int amountMin) {
         this.amountMin = amountMin;
+        getItem().setAmount(amountMin);
     }
 
     public void setSpawnRate(float spawnRate) {
