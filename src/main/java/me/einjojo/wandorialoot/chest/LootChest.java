@@ -81,8 +81,11 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
      * @param lootTable Loot table of the loot chest
      */
     public void setLootTable(@Nullable LootTable lootTable) {
-        if (lootTable != null) this.lootTableUUID = lootTable.getUuid();
-        else this.lootTableUUID = null;
+        if (lootTable != null) {
+            this.lootTableUUID = lootTable.getUuid();
+        } else {
+            this.lootTableUUID = null;
+        }
     }
 
     /**
@@ -206,8 +209,6 @@ public class LootChest implements ConfigurationSerializable, InventoryHolder {
             Location location1 = Location.deserialize((Map<String, Object>) map.get("location"));
             UUID chestUUID = UUID.fromString((String) map.get("uuid"));
 
-
-            LootTable lootTable;
             UUID lootTableUUID = null;
             if (map.get("lootTable") != null && map.get("lootTable").equals("null")) {
                 lootTableUUID = UUID.fromString((String) map.get("lootTable"));
